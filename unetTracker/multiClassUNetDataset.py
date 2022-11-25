@@ -59,13 +59,23 @@ class MultiClassUNetDataset(torch.utils.data.Dataset):
         return len(self.images)
     
     def __getitem__(self,index):
-
+        """
+        Function to get an item from the dataset
+        
+        Returns image, mask and coordinates
+        
+        The mask and image are torch tensor in float32
+        
+        Order of dimension is channel, height, width
+        
+        You can set self.transform to process the item the when loaded. Use albumentation transform functions.
+        """
         img_path = os.path.join(self.image_dir, self.images[index])
         mask_path = os.path.join(self.mask_dir, self.images[index].replace(".jpg",'_mask.npy'))
         coordinates_path = os.path.join(self.coordinates_dir, self.images[index].replace(".jpg",'_coordinates.csv'))
         
     
-        image = cv2.imread(img_path)
+        image = cv2.imread(img_path).astype(np.float32)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         
         mask = np.load(mask_path).astype(np.float32)
@@ -79,18 +89,37 @@ class MultiClassUNetDataset(torch.utils.data.Dataset):
             image = transformed['image']
             mask = transformed['mask']
         
+        
+        
         # to tensor and permute
         image = torch.from_numpy(image).permute(2,0,1)
         mask = torch.from_numpy(mask).permute(2,0,1)
         
         # normalize
-        image = image/255
+        image = image
         mask = mask
         
         
         return image, mask, coordinates # we only need one channel for the mask
     
+    
+    def get_normalization_values(self):
+        """
+        Get the mean and standard deviation of each image channel in the entire dataset
+        
+        This can be used for normalization of model inputs
+        """
+        imgs = torch.stack([img_t for img_t,_,_ in self])
+        imgs = imgs.permute(1,2,3,0)
+        means = imgs.reshape(3,-1).mean(axis=1).numpy()
+        stds = imgs.reshape(3,-1).std(axis=1).numpy()
+        return means,stds
+    
+    
     def get_image_file_name(self,index):
+        """
+        Get the file name for an image
+        """
         img_path = os.path.join(self.image_dir, self.images[index])
         return img_path
     

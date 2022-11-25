@@ -36,6 +36,9 @@ class TrackingProject():
         self.augmentation_RotateProb = 0.3
         self.augmentation_RandomBrightnessContrastProb = 0.2
         
+        # variables for normalization
+        self.normalization_values = None
+               
         
         # for labeling object, so that it is easier to be presice with the mouse click
         self.labeling_ImageEnlargeFactor = 2.0
@@ -98,6 +101,19 @@ class TrackingProject():
         """
         model.load_state_dict(torch.load(self.model_fn))
         model.eval()
+    
+    def set_normalization_values(self,means,stds):
+        """
+        Set the normalization values to use for the model inputs
+        
+        Will be stored in the configuration files to avoid recaculating all the time
+        
+        Arguments:
+        means: 1D numpy array with the mean of the 3 image channels
+        stds: 1D numpy array with the standard deviation of the 3 image channels
+        """
+        self.normalization_values = {"means":means.tolist(),
+                                    "stds":stds.tolist()}
         
     
     def save_configuration(self):
@@ -114,7 +130,8 @@ class TrackingProject():
                     "augmentation_HorizontalFlipProb": self.augmentation_HorizontalFlipProb,
                     "augmentation_RotateProb": self.augmentation_RotateProb,
                     "augmentation_RandomBrightnessContrastProb": self.augmentation_RandomBrightnessContrastProb,
-                    "labeling_ImageEnlargeFactor": self.labeling_ImageEnlargeFactor               
+                    "labeling_ImageEnlargeFactor": self.labeling_ImageEnlargeFactor,
+                    "normalization_values": self.normalization_values
                    }
         
         with open(self.config_fn, 'w') as file:
@@ -137,6 +154,7 @@ class TrackingProject():
             self.augmentation_RotateProb = self.configDict["augmentation_RotateProb"]
             self.augmentation_RandomBrightnessContrastProb = self.configDict["augmentation_RandomBrightnessContrastProb"]
             self.labeling_ImageEnlargeFactor = self.configDict["labeling_ImageEnlargeFactor"]
+            self.normalization_values = self.configDict["normalization_values"]
             print(self.configDict)
             
         else:
