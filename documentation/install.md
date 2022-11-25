@@ -42,7 +42,7 @@ To test that the package is installed.
 ipython
 ```
 ```
-
+from unetTracker.trackingProject import TrackingProject
 ```
 
 ### Add jupyter extension for ipyevents
