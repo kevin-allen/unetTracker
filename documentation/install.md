@@ -33,10 +33,17 @@ git clone https://github.com/kevin-allen/unet-tracker.git
 ### Install the unet-tracker package
 
 ```
-cd unet-tracker
-pip install -e  .
+python3 -m pip install -e unetTracker/
 ```
 
+To test that the package is installed. 
+
+```
+ipython
+```
+```
+from unetTracker.trackingProject import TrackingProject
+```
 
 ### Add jupyter extension for ipyevents
 
