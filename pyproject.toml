@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "unet-tracker"
+name = "unetTracker"
 version = "0.0.1"
 authors = [
   { name="Kevin Allen", email="allen@uni-heidelberg.de" },
@@ -16,5 +16,5 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/kevin-allen/unet-tracker"
-"Bug Tracker" = "https://github.com/kevin-allen/unet-tracker/issues"
+"Homepage" = "https://github.com/kevin-allen/unetTracker"
+"Bug Tracker" = "https://github.com/kevin-allen/unetTracker/issues"

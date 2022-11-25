@@ -90,6 +90,10 @@ class MultiClassUNetDataset(torch.utils.data.Dataset):
         
         return image, mask, coordinates # we only need one channel for the mask
     
+    def get_image_file_name(self,index):
+        img_path = os.path.join(self.image_dir, self.images[index])
+        return img_path
+    
     
     def save_entry(self, image, mask, coordinates):
         """
@@ -98,9 +102,7 @@ class MultiClassUNetDataset(torch.utils.data.Dataset):
         Save coordinates as csv file
         Save mask as a numpy array (npy file)
         
-        """
-            
-            
+        """  
         filename_img = str(uuid.uuid1()) + '.jpg'
         image_path = os.path.join(self.image_dir, filename_img)
         cv2.imwrite(image_path, image)
@@ -113,13 +115,31 @@ class MultiClassUNetDataset(torch.utils.data.Dataset):
         coordinates_path = os.path.join(self.coordinates_dir, filename)
         np.savetxt(coordinates_path, coordinates)
         
-        
-
         self.images = [ntpath.basename(path) for path in glob.glob(os.path.join(self.image_dir,'*.jpg'))]
         self.masks = [ fn.replace(".jpg",'_mask.npy') for fn in self.images]
         self.coordinates = [ fn.replace(".jpg",'_coordinates.csv') for fn in self.images]
         
         return image_path,mask_path,coordinates_path
+    
+    def delete_entry(self, index):
+        """
+        Delete an entry in the dataset.
+        
+        Argument:
+        index: index of the entry to delete
+        """
+        img_path = os.path.join(self.image_dir, self.images[index])
+        mask_path = os.path.join(self.mask_dir, self.images[index].replace(".jpg",'_mask.npy'))
+        coordinates_path = os.path.join(self.coordinates_dir, self.images[index].replace(".jpg",'_coordinates.csv'))
+    
+        for filename in [img_path, mask_path, coordinates_path]:
+            os.remove(filename)
+            
+        self.images = [ntpath.basename(path) for path in glob.glob(os.path.join(self.image_dir,'*.jpg'))]
+        self.masks = [ fn.replace(".jpg",'_mask.npy') for fn in self.images]
+        self.coordinates = [ fn.replace(".jpg",'_coordinates.csv') for fn in self.images]
+        
+    
     
     def create_mask(self,image, coordinates, radius):
         """

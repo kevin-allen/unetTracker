@@ -3,7 +3,7 @@ import threading
 from ipywidgets import Label, HTML, HBox, Image, VBox, Box, HBox
 from ipyevents import Event 
 from IPython.display import display
-from camera import USBCamera, bgr8_to_jpeg
+from unetTracker.camera import bgr8_to_jpeg
 import cv2
 import numpy as np
 import glob

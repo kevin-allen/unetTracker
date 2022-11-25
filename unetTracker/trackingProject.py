@@ -90,6 +90,15 @@ class TrackingProject():
         print("saving model state dict to",self.model_fn)
         print(datetime.now())
         torch.save(model.state_dict(),self.model_fn)
+        
+    
+    def load_model(self,model):
+        """
+        Load the previous model state
+        """
+        model.load_state_dict(torch.load(self.model_fn))
+        model.eval()
+        
     
     def save_configuration(self):
         """
