@@ -2,7 +2,8 @@ import yaml
 import os
 import matplotlib
 from datetime import datetime
-import torch 
+import torch
+import warnings
 
 class TrackingProject():
     """
@@ -43,6 +44,11 @@ class TrackingProject():
         if object_list is None: # assumes we are supposed to get the details from a config file.
             self.load_configuration()
         else: # assumes the user is setting up a new project
+            
+            if os.path.exists(self.project_dir):
+                warnings.warn("The directory {} already exist.\n If you run save_configuration() you will overwrite the previous configuration.".format(self.project_dir))
+              
+            
             self.object_list = object_list
             self.set_object_colors()
             self.target_radius=target_radius

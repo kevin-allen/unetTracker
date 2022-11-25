@@ -3,11 +3,6 @@
 You can create a new Python environment and run the Jupyter notebook from within this environmnt. 
 
 
-### Clone the unet-tracker repository
-
-```
-git clone https://github.com/kevin-allen/unet-tracker.git
-```
 
 ### Create your virtual environment
 
@@ -27,6 +22,21 @@ pip3 install torch torchvision torchaudio matplotlib pandas ipywidgets tqdm jupy
 
 You will need to run `source torch/bin/activate` each time you open a terminal to activate your virtual environment. 
 You can decide to activate it by default by putting `source torch/bin/activate` at the end of your `bash.rc` file.
+
+
+### Clone the unet-tracker repository
+
+```
+git clone https://github.com/kevin-allen/unet-tracker.git
+```
+
+### Install the unet-tracker package
+
+```
+cd unet-tracker
+pip install -e  .
+```
+
 
 ### Add jupyter extension for ipyevents
 
