@@ -14,8 +14,10 @@ from sklearn.model_selection import train_test_split
 import shutil
 import numpy as np
 import albumentations as A
+from zlib import crc32
 
-class MultiClassUNetDataset(torch.utils.data.Dataset):
+
+class UNetDataset(torch.utils.data.Dataset):
     """
     Represent our data for image segmentation.
     
@@ -26,11 +28,11 @@ class MultiClassUNetDataset(torch.utils.data.Dataset):
     """
     
     
-    def __init__(self, image_dir, mask_dir,coordinates_dir,transform=None):
-        super(MultiClassUNetDataset, self).__init__()
+    def __init__(self, image_dir, mask_dir,coordinate_dir,transform=None):
+        super(UNetDataset, self).__init__()
         self.image_dir = image_dir
         self.mask_dir = mask_dir
-        self.coordinates_dir = coordinates_dir
+        self.coordinate_dir = coordinate_dir
         
         self.images = [ntpath.basename(path) for path in glob.glob(os.path.join(image_dir,'*.jpg'))]
         self.masks = [ fn.replace(".jpg",'_mask.npy') for fn in self.images]
@@ -72,7 +74,7 @@ class MultiClassUNetDataset(torch.utils.data.Dataset):
         """
         img_path = os.path.join(self.image_dir, self.images[index])
         mask_path = os.path.join(self.mask_dir, self.images[index].replace(".jpg",'_mask.npy'))
-        coordinates_path = os.path.join(self.coordinates_dir, self.images[index].replace(".jpg",'_coordinates.csv'))
+        coordinates_path = os.path.join(self.coordinate_dir, self.images[index].replace(".jpg",'_coordinates.csv'))
         
     
         image = cv2.imread(img_path).astype(np.float32)
@@ -141,7 +143,7 @@ class MultiClassUNetDataset(torch.utils.data.Dataset):
         np.save(mask_path, mask)
         
         filename = filename_img.replace(".jpg",'_coordinates.csv')
-        coordinates_path = os.path.join(self.coordinates_dir, filename)
+        coordinates_path = os.path.join(self.coordinate_dir, filename)
         np.savetxt(coordinates_path, coordinates)
         
         self.images = [ntpath.basename(path) for path in glob.glob(os.path.join(self.image_dir,'*.jpg'))]
@@ -159,7 +161,7 @@ class MultiClassUNetDataset(torch.utils.data.Dataset):
         """
         img_path = os.path.join(self.image_dir, self.images[index])
         mask_path = os.path.join(self.mask_dir, self.images[index].replace(".jpg",'_mask.npy'))
-        coordinates_path = os.path.join(self.coordinates_dir, self.images[index].replace(".jpg",'_coordinates.csv'))
+        coordinates_path = os.path.join(self.coordinate_dir, self.images[index].replace(".jpg",'_coordinates.csv'))
     
         for filename in [img_path, mask_path, coordinates_path]:
             os.remove(filename)
@@ -194,93 +196,7 @@ class MultiClassUNetDataset(torch.utils.data.Dataset):
         
         return mask
     
-    def create_training_validation_dataset(self,
-                                            train_images_dir = "data/noseDataset/train_images",
-                                            train_masks_dir = "data/noseDataset/train_masks",
-                                            train_coordinates_dir = "data/noseDataset/train_coordinates",
-                                            val_images_dir = "data/noseDataset/val_images",
-                                            val_masks_dir = "data/noseDataset/val_masks",
-                                            val_coordinates_dir = "data/noseDataset/val_coordinates",
-                                           
-                                           test_size=0.15):
-        """
-        Function to create a training and validation dataset out of the current dataset.
-        
-        The images and masks will be splitted into 2 dataset using sklearn.model_selection.train_test_split()
-        
-        Arguments
-        train_images_dir
-        train_masks_dir
-        train_coordinates_dir
-        val_images_dir
-        val_masks_dir
-        val_coordinates_dir
-        test_size
-        """
-        
-        if len(self.images) == 0:
-            print("There is no data to create a training and validation dataset")
-            return
-        
-        # create directories if needed
-        for folder in [train_images_dir,train_masks_dir, train_coordinates_dir , val_images_dir,val_masks_dir,val_coordinates_dir]:
-            if not os.path.exists(folder):
-                print("Create",folder)
-                os.makedirs(folder)
-                
-        # Delete any previous image files in those directories
-        for folder in [train_images_dir,train_masks_dir, train_coordinates_dir , val_images_dir,val_masks_dir,val_coordinates_dir]:
-            for filename in os.listdir(folder):
-                file_path = os.path.join(folder, filename)
-                try:
-                    if os.path.isfile(file_path) or os.path.islink(file_path):
-                        os.unlink(file_path)
-
-                except Exception as e:
-                    print('Failed to delete %s. Reason: %s' % (file_path, e))
-                    
-        X = self.images
-        y = self.masks
-        
-        
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=42)
-        
-        print("Length of training set: {}".format(len(X_train)))
-        print("Length of validation set: {}".format(len(X_test)))
-        
-        # Copy the files to the 4 directories
-        print("Copying files to training and validation directories")
-        for fn in X_train:
-            src = os.path.join(self.image_dir,fn)
-            dst = os.path.join(train_images_dir,fn)
-            shutil.copyfile(src, dst)
-            
-            src = os.path.join(self.coordinates_dir,fn.replace(".jpg",'_coordinates.csv'))
-            dst = os.path.join(train_coordinates_dir,fn.replace(".jpg",'_coordinates.csv'))
-            shutil.copyfile(src, dst)
-            
-            
-        for fn in X_test:
-            src = os.path.join(self.image_dir,fn)
-            dst = os.path.join(val_images_dir,fn)
-            shutil.copyfile(src, dst)
-            
-            src = os.path.join(self.coordinates_dir,fn.replace(".jpg",'_coordinates.csv'))
-            dst = os.path.join(val_coordinates_dir,fn.replace(".jpg",'_coordinates.csv'))
-            shutil.copyfile(src, dst)
-            
-            
-            
-
-        for fn in y_train:
-            src = os.path.join(self.mask_dir,fn)
-            dst = os.path.join(train_masks_dir,fn)
-            shutil.copyfile(src, dst)
-
-        for fn in y_test:
-            src = os.path.join(self.mask_dir,fn)
-            dst = os.path.join(val_masks_dir,fn)
-            shutil.copyfile(src, dst)
+    
 
        
         
@@ -323,3 +239,111 @@ class MultiClassUNetDataset(torch.utils.data.Dataset):
             cv2.imwrite(image_path, frame)
 
         cap.release() 
+    def create_training_validation_dataset(self,
+                                            train_image_dir = "data/noseDataset/train_images",
+                                            train_mask_dir = "data/noseDataset/train_masks",
+                                            train_coordinate_dir = "data/noseDataset/train_coordinates",
+                                            val_image_dir = "data/noseDataset/val_images",
+                                            val_mask_dir = "data/noseDataset/val_masks",
+                                            val_coordinate_dir = "data/noseDataset/val_coordinates",
+                                            test_ratio=0.15):
+        """
+        Function to create a training and validation dataset out of the current dataset.
+        
+        A hash is generated from the image file name and the value is used to assigned the item to the training or validation dataset.
+        An image, as long as the file name does not change, will always be assigned to the same dataset.
+        Adding more items or deleting some will not change the assignation of images. 
+        This ensures that the model is never trained with some images, eventhought the trainding and validation sets might be generated several times.
+        
+        The images, masks and coordinates remain in the original directories, they are just copied to the new directories.
+        
+        
+        Arguments
+        train_image_dir
+        train_mask_dir
+        train_coordinate_dir
+        val_image_dir
+        val_mask_dir
+        val_coordinate_dir
+        test_size
+        """
+        
+        if len(self.images) == 0:
+            raise ValueError("There is not item in the dataset.")
+        if self.image_dir == train_image_dir or self.image_dir == val_image_dir :
+            raise ValueError("The name of the train_image_dir or val_image_dir should not be the same as the image_dir.")
+        if self.mask_dir == train_mask_dir or self.mask_dir == val_mask_dir :
+            raise ValueError("The name of the train_mask_dir or val_mask_dir should not be the same as the mask_dir.")
+        if self.coordinate_dir == train_coordinate_dir or self.coordinate_dir == val_mask_dir :
+            raise ValueError("The name of the train_coordinate_dir or val_coordinate_dir should not be the same as the coordinate_dir.")
+        
+        # create directories if needed
+        for folder in [train_image_dir,train_mask_dir, train_coordinate_dir , val_image_dir,val_mask_dir,val_coordinate_dir]:
+            if not os.path.exists(folder):
+                print("Create",folder)
+                os.makedirs(folder)
+                
+        # Delete any previous image files in those directories
+        for folder in [train_image_dir,train_mask_dir, train_coordinate_dir , val_image_dir,val_mask_dir,val_coordinate_dir]:
+            for filename in os.listdir(folder):
+                file_path = os.path.join(folder, filename)
+                try:
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)
+
+                except Exception as e:
+                    print('Failed to delete %s. Reason: %s' % (file_path, e))
+                    
+        X = self.images # these are file names without directory names
+        y = self.masks # these are file names without directory names
+        
+        # function to get a 32 bit integer from the file name
+        # the value will never change unless the name of the file change
+        # an image will remain in the train or test dataset forever
+        def test_set_check(fileName, test_ratio=test_ratio):
+            return crc32(str.encode(fileName)) & 0xffffffff < test_ratio * 2**32
+        
+        # true if the file should be in the test set
+        boolIndicesTest = np.array([test_set_check(fn) for fn in X])
+        
+        X_test = np.array(X)[boolIndicesTest] # transformed to np.array so that I can do boolean indexing
+        X_train = np.array(X)[~boolIndicesTest]
+        y_test = np.array(y)[boolIndicesTest] 
+        y_train = np.array(y)[~boolIndicesTest]
+        
+        print("Number of item in dataset: {}".format(len(self.images)))
+        print("Length of training set: {}".format(len(X_train)))
+        print("Length of validation set: {}".format(len(X_test)))
+        print("Actual test ratio: {:.3f}".format(len(X_test)/len(self.images)))
+        
+        # Copy the files to the 4 directories
+        print("Copying files to training and validation directories")
+        for fn in X_train:
+            src = os.path.join(self.image_dir,fn)
+            dst = os.path.join(train_image_dir,fn)
+            shutil.copyfile(src, dst)
+            
+            src = os.path.join(self.coordinate_dir,fn.replace(".jpg",'_coordinates.csv'))
+            dst = os.path.join(train_coordinate_dir,fn.replace(".jpg",'_coordinates.csv'))
+            shutil.copyfile(src, dst)
+            
+            
+        for fn in X_test:
+            src = os.path.join(self.image_dir,fn)
+            dst = os.path.join(val_image_dir,fn)
+            shutil.copyfile(src, dst)
+            
+            src = os.path.join(self.coordinate_dir,fn.replace(".jpg",'_coordinates.csv'))
+            dst = os.path.join(val_coordinate_dir,fn.replace(".jpg",'_coordinates.csv'))
+            shutil.copyfile(src, dst)
+            
+            
+        for fn in y_train:
+            src = os.path.join(self.mask_dir,fn)
+            dst = os.path.join(train_mask_dir,fn)
+            shutil.copyfile(src, dst)
+
+        for fn in y_test:
+            src = os.path.join(self.mask_dir,fn)
+            dst = os.path.join(val_mask_dir,fn)
+            shutil.copyfile(src, dst)
