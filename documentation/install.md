@@ -86,9 +86,26 @@ jupyter labextension install @jupyter-widgets/jupyterlab-manager ipyevents
 
 Start jupyter lab and get going with the notebooks in the unet-tracker repository.
 
+If you are working on a desktop machine, just run this command to start the jupyter lab server.
+
 ```
 jupyter lab
 ```
+
+If you are working on a remote server, run this on the server
+
+```
+jupyter lab --no-browser
+```
+
+On your local machine, run
+
+```
+ssh -N -L 8889:localhost:8889 kevin@a230-pc89
+```
+
+Then paste the address of the jupyter server into your browser. It should look like `http://localhost:8889/lab?token=d0427240ec80edfab108b8a0e69a3d8sdfasdfasdfasdfa6`
+
 
 You will have to make sure that the jupyter lab extensions are enable (click on the icon that looks like a puzzel piece called extension manager, far left of the jupyter lab window).
 
