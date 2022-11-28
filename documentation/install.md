@@ -1,8 +1,5 @@
 ## Installation
 
-You can create a new Python environment and run the Jupyter notebook from within this environmnt. 
-
-
 
 ### NVIDIA GPU and drivers
 
