@@ -62,11 +62,24 @@ You will need to create a jupyter extensions that allows us to create a small GU
 
 The instructions can be found here: [ipyevents](https://github.com/mwcraig/ipyevents) package.
 
+On my Unbuntu computer, I had to first install nodejs. I got the instructions [here](https://github.com/nodesource/distributions).
+
+```
+curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash - &&\
+sudo apt-get install -y nodejs
+```
+
+You can double-check that the installation worked.
+
+```
+node -v
+```
+
+Then you should be ready to build the jupyter lab extension
+
 ```
 jupyter labextension install @jupyter-widgets/jupyterlab-manager ipyevents
 ```
-
-You will have to make sure that the jupyter lab extensions are enable (click on the icon that looks like a puzzel piece called extension manager, far left of the jupyter lab window).
 
 
 ### Run jupyter lab
@@ -76,6 +89,8 @@ Start jupyter lab and get going with the notebooks in the unet-tracker repositor
 ```
 jupyter lab
 ```
+
+You will have to make sure that the jupyter lab extensions are enable (click on the icon that looks like a puzzel piece called extension manager, far left of the jupyter lab window).
 
 
 
