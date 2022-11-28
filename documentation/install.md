@@ -56,7 +56,7 @@ ipython
 from unetTracker.trackingProject import TrackingProject
 ```
 
-### Add jupyter extension for ipyevents
+### Add a jupyter extension for ipyevents
 
 You will need to create a jupyter extensions that allows us to create a small GUI within the notebook. 
 
