@@ -4,6 +4,13 @@ You can create a new Python environment and run the Jupyter notebook from within
 
 
 
+### NVIDIA GPU and drivers
+
+You will need to have a GPU and GPU drivers loaded in order to use the GPU to train your network.
+
+You can get instructions from [NVIDIA](https://docs.nvidia.com/datacenter/tesla/tesla-installation-notes/index.html) to do this.
+
+
 ### Create your virtual environment
 
 If you have a conda environment already activated, do `conda deactivate` and make sure you are not in a virtual environment.
