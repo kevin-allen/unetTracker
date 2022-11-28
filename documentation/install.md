@@ -36,6 +36,7 @@ You can decide to activate it by default by putting `source torch/bin/activate` 
 ### Clone the unet-tracker repository
 
 ```
+cd ~/repo
 git clone https://github.com/kevin-allen/unet-tracker.git
 ```
 
