@@ -43,7 +43,8 @@ git clone https://github.com/kevin-allen/unet-tracker.git
 ### Install the unet-tracker package
 
 ```
-python3 -m pip install -e unetTracker/
+cd unetTracker
+python3 -m pip install -e .
 ```
 
 To test that the package is installed. 
