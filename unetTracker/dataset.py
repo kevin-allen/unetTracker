@@ -200,7 +200,7 @@ class UNetDataset(torch.utils.data.Dataset):
 
        
         
-    def extract_frames_from_video(self,video_fn, number_frames, frame_directory):
+    def extract_frames_from_video(self,video_fn, number_frames, frame_dir):
         """
         Function to extract frames from a video. The frames are chosen randomly.
         
@@ -210,22 +210,31 @@ class UNetDataset(torch.utils.data.Dataset):
         frame_directory: Directory in which to save the images
         """
 
-        if not os.path.exists(frame_directory):
-            print("Create",frame_directory)
-            os.makedirs(frame_directory)
+        if not os.path.exists(frame_dir):
+            print("Create",frame_dir)
+            os.makedirs(frame_dir)
 
+        if not os.path.exists(video_fn):  
+            raise IOError("Video file does not exist:",video_fn)
+            
         cap = cv2.VideoCapture(video_fn)
 
         if (cap.isOpened()== False): 
-            print("Error opening video file")
-            return
+            raise ValueError("Error opening video file")
 
         length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        sel_frames = np.random.choice(np.arange(length),size=number_frames, replace=False)
-        sel_frames.sort()
+        
+        
+        if length < 0:
+            print("Problem calculating the video length, file likely corrupted.")
+            print("attempting to get every 200 frames until we collected the requested number of frames")
+            steps = 200
+            sel_frames = np.arange(0,steps*number_frames,steps)
+        else:
+            sel_frames = np.random.choice(np.arange(length),size=number_frames, replace=False)
+            sel_frames.sort()
 
-        print("Extracting frames:", sel_frames, "to",frame_directory)
-
+        print("Extracting frames:", sel_frames, "to",frame_dir)
         for i in sel_frames:
             cap.set(cv2.CAP_PROP_POS_FRAMES,i)
             ret, frame = cap.read()
@@ -235,7 +244,7 @@ class UNetDataset(torch.utils.data.Dataset):
 
 
             filename_img = str(uuid.uuid1()) + '.jpg'
-            image_path = os.path.join(frame_directory, filename_img)
+            image_path = os.path.join(frame_dir, filename_img)
             cv2.imwrite(image_path, frame)
 
         cap.release() 
