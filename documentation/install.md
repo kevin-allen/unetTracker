@@ -6,6 +6,8 @@ You can create a new Python environment and run the Jupyter notebook from within
 
 ### Create your virtual environment
 
+If you have a conda environment already activated, do `conda deactivate` and make sure you are not in a virtual environment.
+
 Create a virtual environment using venv and install the required packages.
 
 Here the virtual environment will be called `torch`.
