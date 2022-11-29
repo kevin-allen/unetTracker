@@ -16,10 +16,10 @@ class CoordinatesFromSegmentationMask():
     
     """
     
-    def __init__(self):
+    def __init__(self,minArea=30):
         self.params = cv2.SimpleBlobDetector_Params()
         self.params.filterByArea = True
-        self.params.minArea = 100 # between 400 and 500 is the decision point
+        self.params.minArea = minArea # between 400 and 500 is the decision point for face, 30 for small mice
         self.detector = cv2.SimpleBlobDetector_create(self.params)
 
     def detect(self, modelOutput):
