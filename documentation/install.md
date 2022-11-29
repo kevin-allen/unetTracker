@@ -105,7 +105,7 @@ pip3 install torch torchvision torchaudio
 ### Install a few more libraries 
 
 ```
-matplotlib pandas tqdm  imgaug albumentations 
+pip3 install matplotlib pandas tqdm  imgaug albumentations 
 ```
 
 You will need to run `source torch/bin/activate` each time you open a terminal to activate your virtual environment. 
