@@ -25,6 +25,8 @@ class TrackingProject():
         self.mask_dir = os.path.join(self.dataset_dir,"masks")
         self.coordinate_dir = os.path.join(self.dataset_dir,"coordinates")
         self.models_dir = os.path.join(self.project_dir,"models")
+        self.augmentation_dir = os.path.join(self.project_dir,"augmentation")
+        
         self.config_fn = os.path.join(self.project_dir,"config.yalm")
         self.model_fn = os.path.join(self.models_dir,"UNet.pt")
         self.image_size = [480,640]  # height,width
@@ -80,7 +82,7 @@ class TrackingProject():
         Create all the directory for the project and dataset
         """
         # create directories if needed
-        for dir in [self.project_dir, self.dataset_dir, self.image_dir, self.coordinate_dir, self.mask_dir,self.models_dir]:
+        for dir in [self.project_dir, self.dataset_dir, self.image_dir, self.coordinate_dir, self.mask_dir,self.models_dir,self.augmentation_dir]:
             if not os.path.exists(dir):
                 print("Create",dir)
                 os.makedirs(dir)
