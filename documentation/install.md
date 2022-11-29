@@ -33,6 +33,7 @@ You can decide to activate it by default by putting `source torch/bin/activate` 
 ### Clone the unet-tracker repository
 
 ```
+mkdir ~/repo
 cd ~/repo
 git clone https://github.com/kevin-allen/unet-tracker.git
 ```
@@ -40,7 +41,7 @@ git clone https://github.com/kevin-allen/unet-tracker.git
 ### Install the unet-tracker package
 
 ```
-cd unetTracker
+cd unet-tracker
 python3 -m pip install -e .
 ```
 
