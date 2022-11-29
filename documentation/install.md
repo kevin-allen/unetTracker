@@ -22,6 +22,22 @@ sudo apt-get install pip
 python3 -m pip install --user --upgrade pip
 python3 -m venv torch
 source torch/bin/activate
+```
+
+Make sure your `torch` environment is activated for all the remaining installation steps.
+
+To activate the `torch` environment...
+```
+cd 
+source torch/bin/activate
+```
+
+
+### Install ipwidgets, ipyevents and jupyterlab
+
+Within the `torch` environment, run the following.
+
+```
 pip3 install ipyevents ipywidgets jupyterlab
 ```
 
@@ -32,7 +48,10 @@ You will need to create a jupyter extensions that allows us to create a small GU
 
 The instructions can be found here: [ipyevents](https://github.com/mwcraig/ipyevents) package.
 
-On my Unbuntu computer, I had to first install nodejs. I got the instructions [here](https://github.com/nodesource/distributions).
+
+#### nodejs
+
+On my Unbuntu computer, I had to first install a recent nodejs. I got the instructions [here](https://github.com/nodesource/distributions).
 
 ```
 sudo apt-get install curl
@@ -46,7 +65,12 @@ You can double-check that the installation worked.
 node -v
 ```
 
-Then you should be ready to build the jupyter lab extension
+You should have version 16 installed.
+
+
+Now build the jupyter lab extension
+
+#### Build the ipyevents jupyterlab extension
 
 ```
 jupyter labextension install @jupyter-widgets/jupyterlab-manager ipyevents
@@ -56,9 +80,10 @@ If you have a warning: `ValueError: Please install nodejs >=12.0.0 before contin
 
 Remove the current version of nodejs and reinstall the one above.
 
-### Test ipyevents in jupyter lab
+### Test that ipyevents works
 
 Start jupyter lab
+
 ```
 jupyter lab
 ```
@@ -91,8 +116,7 @@ display(l, h)
 
 ```
 
-You should see some information when you click on the button.
-
+You should see some information when you click on the red button.
 
 
 ### Install pytorch
@@ -107,9 +131,6 @@ pip3 install torch torchvision torchaudio
 ```
 pip3 install matplotlib pandas tqdm  imgaug albumentations 
 ```
-
-You will need to run `source torch/bin/activate` each time you open a terminal to activate your virtual environment. 
-You can decide to activate it by default by putting `source torch/bin/activate` at the end of your `bash.rc` file.
 
 
 ### Clone the unet-tracker repository
@@ -140,6 +161,11 @@ from unetTracker.trackingProject import TrackingProject
 
 ### Run jupyter lab
 
+
+You will need to run `source torch/bin/activate` each time you open a terminal to activate your virtual environment. 
+
+You can decide to activate it by default by putting `source torch/bin/activate` at the end of your `bash.rc` file.
+
 Start jupyter lab and get going with the notebooks in the unet-tracker repository.
 
 If you are working on a desktop machine, just run this command to start the jupyter lab server.
@@ -147,6 +173,9 @@ If you are working on a desktop machine, just run this command to start the jupy
 ```
 jupyter lab
 ```
+
+
+### Run jupyter lab on a remote server
 
 If you are working on a remote server, run this on the server
 
@@ -164,8 +193,3 @@ Then paste the address of the jupyter server into your browser. It should look l
 
 
 You will have to make sure that the jupyter lab extensions are enable (click on the icon that looks like a puzzel piece called extension manager, far left of the jupyter lab window).
-
-
-
-
-
