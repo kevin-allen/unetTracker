@@ -63,6 +63,7 @@ The instructions can be found here: [ipyevents](https://github.com/mwcraig/ipyev
 On my Unbuntu computer, I had to first install nodejs. I got the instructions [here](https://github.com/nodesource/distributions).
 
 ```
+sudo apt-get install curl
 curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash - &&\
 sudo apt-get install -y nodejs
 ```
@@ -78,6 +79,10 @@ Then you should be ready to build the jupyter lab extension
 ```
 jupyter labextension install @jupyter-widgets/jupyterlab-manager ipyevents
 ```
+
+If you have a warning: `ValueError: Please install nodejs >=12.0.0 before continuing`
+
+Remove the current version of nodejs and reinstall the one above.
 
 
 ### Run jupyter lab
