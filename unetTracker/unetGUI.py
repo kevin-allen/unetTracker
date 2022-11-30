@@ -39,6 +39,7 @@ class LabelFromCameraGUI():
         # image normalization
         means = project.normalization_values["means"]
         stds = project.normalization_values["stds"]
+        
         self.transform = A.Compose([A.Normalize(mean=means, std=stds)])
         
         
@@ -99,7 +100,7 @@ class LabelFromCameraGUI():
         ## start camera
         self.start_video()
         # display all widgets
-        display(VBox([HBox([self.imgVideoWidget,self.imgVideoTrackedWidget,self.playStopButtons]),self.htmlWidget,self.coordinatesBox, self.imgSnapshotWidget,HBox([self.imgLabelWidget,self.saveButton])]))
+        display(VBox([HBox([self.imgVideoWidget,self.imgVideoTrackedWidget,self.playStopButtons]),self.htmlWidget,self.coordinatesBox,                   self.imgSnapshotWidget,HBox([self.imgLabelWidget,self.saveButton])]))
 
         
     """
@@ -259,7 +260,7 @@ class LabelFromCameraGUI():
 ################################
 class LabelFromImagesGUI():
     """
-    Class to label frames from a camera feed.
+    Class to label frames from single images.
     """
     def __init__(self,image_dir,project,dataset,model=None):
 
@@ -436,7 +437,14 @@ class LabelFromImagesGUI():
                 cv2.circle(frameNp,(x,y), self.project.target_radius, self.project.object_colors[i], -1)
         self.imgLabelWidget.value = bgr8_to_jpeg(frameNp)    
     
-       
+
+    
+    
+    
+    
+    
+    
+    
         
 
     
@@ -572,4 +580,310 @@ class ReviewDatasetGUI():
                 cv2.circle(frame,(x,y), self.project.target_radius, self.project.object_colors[i], -1)
         return frame
         
+
+        
+#############################################
+####### work with images from a video #######
+####### with or without model         #######
+#############################################
+class RepeatTimer(threading.Timer):
+    def run(self):
+        while not self.finished.wait(self.interval):
+            self.function(*self.args, **self.kwargs)        
+class LabelFromVideoGUI():
+    """
+    Class to label frames from a camera feed.
+    """
+    def __init__(self,video_fn,project,dataset,model=None,device=None):
+
+        self.video_fn = video_fn
+        self.project = project
+        self.dataset = dataset
+        self.model = model
+        self.device = device
+        
+        
+        # image normalization
+        means = project.normalization_values["means"]
+        stds = project.normalization_values["stds"]
+        
+        self.transform = A.Compose([A.Normalize(mean=means, std=stds)])
+        
+        self.image_scaling_factor = self.project.labeling_ImageEnlargeFactor
+        
+        
+        
+        self.imgVideoWidget = Image(format='jpeg',height=project.image_size[0]/2, width=project.image_size[1]/2)  
+        self.imgVideoTrackedWidget = Image(format='jpeg',height=project.image_size[0]/2, width=project.image_size[1]/2)
+        self.imgSnapshotWidget = Image(format='jpeg',height=project.image_size[0]*self.image_scaling_factor, width=project.image_size[1]*self.image_scaling_factor)
+        self.imgLabelWidget =  Image(format='jpeg',height=project.image_size[0], width=project.image_size[1])
+        
+        # to debug and display information
+        self.htmlWidget = HTML('Event info')
+        
+        
+        self.objectLabel = widgets.Label(value='Objects:')
+        self.objectRadioButtons = widgets.RadioButtons(
+            options=self.project.object_list,
+            value=self.project.object_list[0],
+            layout={'width': 'max-content'})
+
+        self.coordBounded=[] # a list of list (one per object) of 2 IntText (x and y coordinates)
+        for i in enumerate(self.project.object_list):
+            self.coordBounded.append([widgets.IntText(value=None, description='X:',disabled=False),widgets.IntText(value=None, description='Y:',disabled=False)])
+
+            
+        manyHBoxes = [ HBox(coords) for coords in self.coordBounded]
+        
+        self.coordinatesBox = HBox([self.objectLabel,self.objectRadioButtons,VBox(manyHBoxes)])
+        
+        
+        self.previousButton = widgets.Button(description='Previous frame',
+                            disabled=False,
+                            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                            tooltip='Click me',
+                            icon='check') # (FontAwesome names without the `fa-` prefix)
+        
+        self.nextButton = widgets.Button(description='Next frame',
+                            disabled=False,
+                            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                            tooltip='Click me',
+                            icon='check') # (FontAwesome names without the `fa-` prefix)
+        
+        self.saveButton = widgets.Button(description='Save labelled frame',
+                            disabled=False,
+                            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                            tooltip='Click me',
+                            icon='check') # (FontAwesome names without the `fa-` prefix)
+        
+        self.slider = widgets.IntSlider(value=0,min=0, max=10, step=1, description='Test:', disabled=False, continuous_update=False, orientation='horizontal', readout=True, readout_format='d')
+        self.slider.observe(self.slider_handle_event, names='value')
+        
+        self.timerRunning = False
+        self.timerWait=0.01
+        
+        self.playStopButtons = widgets.ToggleButtons(
+                            options={'Play':0, 'Stop':1},
+                            description='Camera:',
+                            disabled=False,
+                            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                            tooltips=['Show live images' 'Stop live images'])
+        
+        
+        
+        """
+        Events handling
+        """
+        
+        self.nextEvent =  Event(source=self.nextButton, watched_events=['click'])
+        self.nextEvent.on_dom_event(self.next_handle_event)
+        
+        self.previousEvent =  Event(source=self.previousButton, watched_events=['click'])
+        self.previousEvent.on_dom_event(self.previous_handle_event)
+        
+        self.playStopEvent = Event(source=self.playStopButtons, watched_events=['click'])
+        self.playStopEvent.on_dom_event(self.play_stop_handle_event)
+        
+        
+        self.captureEvent = Event(source=self.imgVideoWidget, watched_events=['click'])
+        self.captureEvent.on_dom_event(self.capture_handle_event)
+        
+        self.addCoordinatesEvent = Event(source=self.imgSnapshotWidget, watched_events=['click'])
+        self.addCoordinatesEvent.on_dom_event(self.add_coordinates_handle_event)
+        
+        self.saveEvent =  Event(source=self.saveButton, watched_events=['click'])
+        self.saveEvent.on_dom_event(self.save_handle_event)
+        
+        """
+        Get the first image from the video
+        """
+        
+        if not os.path.exists(self.video_fn):  
+            raise IOError("Video file does not exist:",self.video_fn)
+            
+        self.cap = cv2.VideoCapture(self.video_fn)
+
+        if (self.cap.isOpened()== False): 
+            raise ValueError("Error opening video file")
+
+        self.video_length = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.image_index = 0
+        if self.video_length < 0:
+            print("Problem calculating the video length, file likely corrupted.")
+        
+    
+        self.slider.max=self.video_length
+        
+        
+        display(VBox([HBox([self.imgVideoWidget,self.imgVideoTrackedWidget,VBox([self.playStopButtons,self.previousButton,self.nextButton,self.slider])]),self.htmlWidget, self.coordinatesBox, 
+                      HBox([self.imgSnapshotWidget]),HBox([self.imgLabelWidget,self.saveButton])]))
+        
+        self.update_image()
+
+    def play_stop_handle_event(self,event):
+        if self.timerRunning == False:
+            self.playTimer = RepeatTimer(self.timerWait, self.on_play_timer)
+            self.playTimer.start()
+            self.timerRunning = True
+        else:
+            self.playTimer.cancel()
+            self.timerRunning=False
+            
+            
+    def capture_handle_event(self, event):
+
+        frame = self.imgVideoWidget.value
+        target=(event["relativeX"],event["relativeY"])
+
+        self.imgSnapshotWidget.value = frame
+        self.imgLabelWidget.value = frame
+
+        # set coordinate to 0,0
+        for i in range(len(self.project.object_list)):
+            self.coordBounded[i][0].value=0
+            self.coordBounded[i][1].value=0
+            
+        lines = "dataset size:{}".format(len(self.dataset))
+        content = "  ".join(lines)
+        self.htmlWidget.value = content
+
+    def update_image(self):
+        
+        if self.image_index > self.video_length:
+            self.image_index = 0
+        
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES,self.image_index)
+        
+        ret, image = self.cap.read()
+        
+        if ret == False:
+            raise ValueError("Error reading video frame")
+        
+        image_copy = image.copy()
+        if self.model is not None:
+            processed_image, output = self.label_current_frame_with_model(image_copy)
+        else:
+            processed_image = image_copy
+            
+        self.imgVideoTrackedWidget.value = bgr8_to_jpeg(processed_image)    
+        self.imgVideoWidget.value = bgr8_to_jpeg(image)  
+         
+       
+        
+    """
+    Callback function to handle user inputs
+    """
+    def next_handle_event(self, event):
+        if (self.image_index+1) < self.video_length:
+            self.image_index+=1
+        self.slider.value=self.image_index
+        #self.update_image()
+    def on_play_timer(self):
+        if (self.image_index+1) < self.video_length:
+            self.image_index+=1
+        else:
+            self.image_index = 0
+        self.slider.value=self.image_index
+
+    
+    def previous_handle_event(self, event):
+        if (self.image_index-1) >= 0:
+            self.image_index-=1
+        self.slider.value=self.image_index
+        #self.update_image()
+        
+    def slider_handle_event(self,change):
+        self.image_index=change["new"]
+        self.update_image()
+     
+    def label_current_frame_with_model(self,image):
+        """
+        preprocess the frame,
+        pass it to newtork
+        use the output of the network to label the image
+        
+        Argument:
+        image as a numpy array 
+        """
+        # preprocess
+        input = image.copy().astype(np.float32)
+        input = self.transform(image=input)  
+        input = input["image"]
+        input = torch.tensor(input).to(self.device).permute(2,0,1).unsqueeze(0).float()
+        
+        # model prediction
+        output = torch.sigmoid(self.model(input))
+        output = (output>0.5).float()
+        output = output[0,:].to("cpu").detach().numpy()
+
+        for i in range(output.shape[0]):
+            idx=(output[i]==1.0)
+            for c in range(3):
+                image[idx,c]=self.project.object_colors[i][c]
+
+        return image, output
+        
+    
+    
+    def save_handle_event(self,event):
+        # get coordinates for each object
+        # arrays with 2 columns for x and y
+       
+        coordinates = np.empty((len(self.project.object_list),2))
+      
+        for i in range(len(self.project.object_list)):
+            if self.coordBounded[i][0].value == 0 and self.coordBounded[i][0].value == 0:
+                coordinates[:,0]=np.nan
+            else:
+               
+                coordinates[i,0] = self.coordBounded[i][0].value
+                coordinates[i,1] = self.coordBounded[i][1].value
+       
+        # create the mask get mask for each object
+        frame = self.imgSnapshotWidget.value
+        frame = cv2.imdecode(np.frombuffer(frame, np.uint8),-1)
+        mask = self.dataset.create_mask(frame,coordinates,self.project.target_radius)
+        img_path, mask_path, coordinates_path = self.dataset.save_entry(frame,mask,coordinates)
+         
+        lines = "dataset size:{}".format(len(self.dataset))
+        content = "  ".join(lines)
+        self.htmlWidget.value = content
+        
+        
+    def add_coordinates_handle_event(self,event):
+        """
+        Clicking to add a coordinate to an object
+        """
+
+        target=(round(event["relativeX"]/self.image_scaling_factor),round(event["relativeY"]/self.image_scaling_factor))
+        selectedObject = self.objectRadioButtons.value
+        objectIndex = self.project.object_list.index(selectedObject)
+
+        # get the coordinates in the intText widgets
+        self.coordBounded[objectIndex][0].value=target[0]
+        self.coordBounded[objectIndex][1].value=target[1]
+
+        # move to the next index
+        objectIndex=objectIndex+1
+        if objectIndex == len(self.project.object_list):
+            objectIndex=0
+
+        lines = "select:{}, index:{}".format(selectedObject,objectIndex)
+        content = "  ".join(lines)
+        self.htmlWidget.value = content
+                                      
+        self.objectRadioButtons.value=self.project.object_list[objectIndex]
+
+        # label the frame with current coordinates
+        frame = self.imgSnapshotWidget.value
+        frameNp = cv2.imdecode(np.frombuffer(frame, np.uint8),-1)
+
+        for i,myObject in enumerate(self.project.object_list):
+            x=self.coordBounded[i][0].value
+            y=self.coordBounded[i][1].value
+            if(x!=0 and y!=0):
+                cv2.circle(frameNp,(x,y), self.project.target_radius, self.project.object_colors[i], -1)
+        self.imgLabelWidget.value = bgr8_to_jpeg(frameNp)    
+    
+       
         

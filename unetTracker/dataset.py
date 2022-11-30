@@ -240,7 +240,7 @@ class UNetDataset(torch.utils.data.Dataset):
             ret, frame = cap.read()
 
             if ret == False:
-                print 
+                print ("error reading frame")
 
 
             filename_img = str(uuid.uuid1()) + '.jpg'
