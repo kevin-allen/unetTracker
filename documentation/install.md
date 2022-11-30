@@ -119,19 +119,11 @@ display(l, h)
 You should see some information when you click on the red button.
 
 
-### Install pytorch
+### Install pytorch and some other libraries
 
 ```
-pip3 install torch torchvision torchaudio 
+pip3 install torch torchvision matplotlib pandas tqdm  imgaug albumentations 
 ```
-
-
-### Install a few more libraries 
-
-```
-pip3 install matplotlib pandas tqdm  imgaug albumentations 
-```
-
 
 ### Clone the unet-tracker repository
 
