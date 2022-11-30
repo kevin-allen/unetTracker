@@ -160,6 +160,5 @@ class TrackingProject():
             print(self.configDict)
             
         else:
-            print("No configuration file present",self.config_fn)
-            return False
+            raise IOError("No configuration file present,",self.config_fn)
             
