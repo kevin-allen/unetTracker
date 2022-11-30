@@ -204,7 +204,7 @@ class LabelFromCameraGUI():
         
         # model prediction
         output = torch.sigmoid(self.model(input))
-        output = (output>0.5).float()
+        output = (output>0.3).float()
         output = output[0,:].to("cpu").detach().numpy()
 
         for i in range(output.shape[0]):
