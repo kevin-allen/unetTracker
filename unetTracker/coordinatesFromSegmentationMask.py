@@ -8,7 +8,7 @@ class CoordinatesFromSegmentationMask():
     
     This assumes that the objects are represented by a circle centered on the object.
     
-    The input is the output of a segmentation model that was transformed to a numpy array.
+    The of the detect function is the output of a segmentation model that was transformed to a numpy array.
     
     Dimensions are : batch x object x height x width
     
@@ -17,6 +17,10 @@ class CoordinatesFromSegmentationMask():
     """
     
     def __init__(self,minArea=30):
+        """
+        Argument 
+        minArea: minArea of the cv2.SimpleBlobDetector parameter.
+        """
         self.params = cv2.SimpleBlobDetector_Params()
         self.params.filterByArea = True
         self.params.minArea = minArea # between 400 and 500 is the decision point for face, 30 for small mice
@@ -24,6 +28,7 @@ class CoordinatesFromSegmentationMask():
 
     def detect(self, modelOutput):
         """
+        Detect the most likely position of each object tracked by a segmentation model
         
         Arguments:
         modelOutput should be the output of a segmentation model. The range of values should be 0 to 1 (torch.sigmoid()).

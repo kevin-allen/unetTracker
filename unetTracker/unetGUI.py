@@ -806,7 +806,7 @@ class LabelFromVideoGUI():
         image as a numpy array 
         """
         # preprocess
-        input = image.copy().astype(np.float32)
+        input = image.astype(np.float32)
         input = self.transform(image=input)  
         input = input["image"]
         input = torch.tensor(input).to(self.device).permute(2,0,1).unsqueeze(0).float()
