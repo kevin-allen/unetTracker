@@ -65,3 +65,51 @@ def extract_object_position_from_video(project,transform,model,device,video_fn,b
         df[f"{ob}_p"] = all_coords[:,i*3+2]
 
     return df
+
+
+
+def label_video(project,video_fn,tracking_fn, label_fn):
+    """
+    Function to label a video (add a marker at the coordinate of the detected objects)
+    
+    Arguments:
+    video_fn: file name of the video to label
+    tracking_fn: tracking data for the video to label (Pandas.DataFrame with x,y,p for each object)
+    label_fn: name of the labelled video file that will be created
+    """
+    df = pd.read_csv(tracking_fn)
+
+    if os.path.exists(label_fn):
+        raise IOError(f"{label_fn} already exists, please remove it")
+
+    if not os.path.exists(video_fn):  
+        raise IOError("Video file does not exist:",video_fn)
+
+    cap = cv2.VideoCapture(video_fn)
+
+    if (cap.isOpened()== False): 
+        raise ValueError("Error opening video file")
+
+    video_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    print("Number of frames:",video_length)
+
+    if video_length < 0:
+        raise ValueError("Problem calculating the video length, file likely corrupted.")
+
+    size=project.image_size[1],project.image_size[0]
+    writer = cv2.VideoWriter(label_fn, cv2.VideoWriter_fourcc(*'MJPG'),30, size)
+
+    d = df.to_numpy() # to facilitate indexing with numbers
+
+    for i in tqdm(range(video_length)):
+        ret, image = cap.read()
+        if ret == False:
+            raise ValueError("Error reading video frame")
+
+        for j,obj in enumerate(project.object_list):
+            if ~np.isnan(d[i,j*3+0]):
+                cv2.circle(image,(int(d[i,j*3+0]),int(d[i,j*3+1])), 5, project.object_colors[j], -1)
+        writer.write(image)
+
+    cap.release()
+    writer.release()
