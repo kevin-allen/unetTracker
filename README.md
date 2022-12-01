@@ -1,15 +1,14 @@
 # unetTracker
 
-Code to train and deploy a U-Net to track objects in images, videos, or camera feeds.
+Code to train and deploy a U-Net to track objects in images, videos, or camera feeds. For each image, we get a coordinate for each tracked object if they are visible in the image.
 
-The U-Net does image segmentation, but it is used here to track the position of different object in space (e.g., body parts).
+There is a series Jupyter notebooks that get you through the steps required to train your network, assess how good it is, improve it, and process videos.
 
-The user follows a series Jupyter notebooks which illustrate how to do the main steps involved in setting up a project, preparing a dataset, training a neural network and deploying the model.
+You can work from saved videos or from a camera.
 
-Labeling of images to train the network can be done within a jupyter notebook. 
+The project uses PyTorch as a deep learning framework. You will need access to a GPU to train your model.
 
-The project uses PyTorch as a deep learning framework. Training and inference will be much faster on GPU.
-
+We have develop this code on computers running Ubuntu 20.04.
 
 * [Installation](documentation/install.md)
 * [Getting started](documentation/getting_started.md)
