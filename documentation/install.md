@@ -130,7 +130,7 @@ pip3 install torch torchvision matplotlib pandas tqdm  imgaug albumentations
 ```
 mkdir ~/repo
 cd ~/repo
-git clone https://github.com/kevin-allen/unet-tracker.git
+git clone https://github.com/kevin-allen/unetTracker.git
 ```
 
 ### Install the unet-tracker package
