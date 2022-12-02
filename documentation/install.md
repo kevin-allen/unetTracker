@@ -152,5 +152,5 @@ You will have to make sure that the jupyter lab extensions are enable (click on 
 
 ### ipyevents
 
-If you have problem using the GUI part of unetTracker, make sure the ipyevents are working. [Test available here](ipyevent_test.md)
+If you have problem using the GUI part of unetTracker, make sure the ipyevents are working. [Test available here](ipyevents_test.md)
 
