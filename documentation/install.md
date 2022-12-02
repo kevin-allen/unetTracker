@@ -150,4 +150,7 @@ Then paste the address of the jupyter server into your browser. It should look l
 You will have to make sure that the jupyter lab extensions are enable (click on the icon that looks like a puzzel piece called extension manager, far left of the jupyter lab window).
 
 
+### ipyevents
+
+If you have problem using the GUI part of unetTracker, make sure the ipyevents are working. [Test available here](ipyevent_test.md)
 
