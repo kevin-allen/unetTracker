@@ -99,7 +99,7 @@ git clone https://github.com/kevin-allen/unetTracker.git
 ### Install the unet-tracker package
 
 ```
-cd unet-tracker
+cd unetTracker
 python3 -m pip install -e .
 ```
 
