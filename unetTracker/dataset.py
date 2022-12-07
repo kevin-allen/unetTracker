@@ -200,7 +200,7 @@ class UNetDataset(torch.utils.data.Dataset):
 
        
         
-    def extract_frames_from_video(self,video_fn, number_frames, frame_dir):
+    def extract_frames_from_video(self,video_fn, number_frames, frame_dir,image_size):
         """
         Function to extract frames from a video. The frames are chosen randomly.
         
@@ -208,6 +208,7 @@ class UNetDataset(torch.utils.data.Dataset):
         video_fn: File name of the video
         number_frames: Number of frames to extract
         frame_directory: Directory in which to save the images
+        image_size: Expected image size, list or tuple of 2 numbers (height,width)
         """
 
         if not os.path.exists(frame_dir):
@@ -223,7 +224,13 @@ class UNetDataset(torch.utils.data.Dataset):
             raise ValueError("Error opening video file")
 
         length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) 
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         
+        print(f"video length: {length}, image size: {height}h {width}w")
+        
+        if image_size[0] != height or image_size[1] != width:
+            raise ValueError("Expect video frame dimensions of {} but got {}h {}w".format(image_size,height,width))
         
         if length < 0:
             print("Problem calculating the video length, file likely corrupted.")
