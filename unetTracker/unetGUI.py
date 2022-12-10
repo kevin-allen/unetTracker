@@ -11,12 +11,17 @@ import os
 import torch
 import ntpath
 import albumentations as A
+import matplotlib.pyplot as plt
 
-class LabelFromCameraGUI():
+
+class LabelFromCameraGUI(VBox):
     """
     Class to show images from camera and add selected frames to the dataset.
     If you give it a model it will show the image with labels. 
     This makes it easier to identify when the model struggle to find the objects.
+    
+    
+    https://matplotlib.org/ipympl/examples/full-example.html
     
     """
     def __init__(self,camera,project,dataset,model=None,device=None):
@@ -29,6 +34,8 @@ class LabelFromCameraGUI():
         model: Unet object of the unet module
         """
             
+        super().__init__()
+        
         self.camera = camera
         self.project = project
         self.dataset = dataset
@@ -49,8 +56,20 @@ class LabelFromCameraGUI():
          # image widgets to display different images
         self.imgVideoWidget = Image(format='jpeg',height=project.image_size[0]/2, width=project.image_size[1]/2)  
         self.imgVideoTrackedWidget = Image(format='jpeg',height=project.image_size[0]/2, width=project.image_size[1]/2)
-        self.imgSnapshotWidget = Image(format='jpeg',height=project.image_size[0], width=project.image_size[1])
-        self.imgLabelWidget =  Image(format='jpeg',height=240, width=320)
+        self.imgLabelWidget =  Image(format='jpeg',height=project.image_size[0]/2, width=project.image_size[1]/2)
+        
+        
+        self.imgSnapshot = None
+        plt.ioff()
+        self.fig = plt.figure()
+        plt.ion()
+        self.fig.canvas.toolbar_visible = False
+        # Disable the resizing feature
+        self.fig.canvas.resizable = True
+        self.fig.canvas.header_visible = False
+        
+        self.ax = self.fig.gca()
+
         
         # to debug and report information to user
         self.htmlWidget = HTML('Event info')
@@ -68,11 +87,11 @@ class LabelFromCameraGUI():
         self.coordinatesBox = HBox([self.objectLabel,self.objectRadioButtons,VBox(manyHBoxes)])
         
         # save and play-stop buttons
-        self.saveButton = widgets.Button(description='Save labelled frame',
+        self.saveButton = widgets.Button(description='Save to dataset',
                             disabled=False,
                             button_style='', # 'success', 'info', 'warning', 'danger' or ''
                             tooltip='Click me',
-                            icon='check') # (FontAwesome names without the `fa-` prefix)
+                            icon='Click me') # (FontAwesome names without the `fa-` prefix)
         
         self.playStopButtons = widgets.ToggleButtons(
                             options={'Play':0, 'Stop':1},
@@ -81,56 +100,36 @@ class LabelFromCameraGUI():
                             button_style='', # 'success', 'info', 'warning', 'danger' or ''
                             tooltips=['Show live images' 'Stop live images'])
         
+        self.captureButton = widgets.Button(description ="Capture a frame",
+                            disabled=False,
+                            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                            tooltip='Click me')
+        
         """
         Events handling
         """
-        self.playStopEvent = Event(source=self.playStopButtons, watched_events=['click'])
-        self.playStopEvent.on_dom_event(self.play_stop_handle_event)
-        
-        self.captureEvent = Event(source=self.imgVideoWidget, watched_events=['click'])
-        self.captureEvent.on_dom_event(self.capture_handle_event)
-        
-        self.addCoordinatesEvent = Event(source=self.imgSnapshotWidget, watched_events=['click'])
-        self.addCoordinatesEvent.on_dom_event(self.add_coordinates_handle_event)
-        
-        self.saveEvent =  Event(source=self.saveButton, watched_events=['click'])
-        self.saveEvent.on_dom_event(self.save_handle_event)
-        
-        
+        self.playStopButtons.observe(self.play_stop_handle_event, names='value')
+        self.saveButton.on_click(self.save_handle_event)
+        self.captureButton.on_click(self.capture_handle_event)
+       
+        # deal with click on the mpl canvas
+        self.cid = self.fig.canvas.mpl_connect('button_press_event', self.add_coordinates_handle_event)
+       
         ## start camera
         self.start_video()
+        
+        
         # display all widgets
-        display(VBox([HBox([self.imgVideoWidget,self.imgVideoTrackedWidget,self.playStopButtons]),self.htmlWidget,self.coordinatesBox,                   self.imgSnapshotWidget,HBox([self.imgLabelWidget,self.saveButton])]))
+        self.children = [HBox([self.imgVideoWidget,self.imgVideoTrackedWidget,self.imgLabelWidget]),
+                         VBox([self.playStopButtons,self.captureButton,self.saveButton]),
+                      self.htmlWidget,
+                      self.coordinatesBox,  
+                      self.fig.canvas]
 
         
     """
     Callback function to handle user inputs
     """    
-    def save_handle_event(self,event):
-        """
-        Callback to save image, mask and coordinates to dataset
-        """
-        # get coordinates for each object
-        # arrays with 2 columns for x and y
-
-        coordinates = np.empty((len(self.project.object_list),2))
-        # get the coordinates from widgets
-        # if coordinates are 0,0, the object was not label
-        for i in range(len(self.project.object_list)):
-            if self.coordBounded[i][0].value == 0 and self.coordBounded[i][0].value == 0:
-                coordinates[:,0]=np.nan
-            else:
-                coordinates[i,0] = self.coordBounded[i][0].value
-                coordinates[i,1] = self.coordBounded[i][1].value
-                
-        # create the mask get mask for each object
-        frame = self.imgSnapshotWidget.value
-        frame = cv2.imdecode(np.frombuffer(frame, np.uint8),-1)
-        mask = self.dataset.create_mask(frame,coordinates,self.project.target_radius)
-        
-        # save the data to the dataset
-        img_path, mask_path, coordinates_path = self.dataset.save_entry(frame,mask,coordinates)
-
     
     def add_coordinates_handle_event(self,event):
         """
@@ -138,7 +137,7 @@ class LabelFromCameraGUI():
         Clicking to add a coordinate to an object
         """
         # get coordinate for the click, object that was selected and its index
-        target=(round(event["relativeX"]/self.image_scaling_factor),round(event["relativeY"]/self.image_scaling_factor))
+        target=(event.xdata,event.ydata)
         selectedObject = self.objectRadioButtons.value
         objectIndex = self.project.object_list.index(selectedObject)
 
@@ -158,7 +157,7 @@ class LabelFromCameraGUI():
         self.objectRadioButtons.value=self.project.object_list[objectIndex]
 
         # label the frame with current coordinates
-        frame = self.imgSnapshotWidget.value
+        frame = self.imgSnapshot
         frameNp = cv2.imdecode(np.frombuffer(frame, np.uint8),-1)
 
         for i,myObject in enumerate(self.project.object_list):
@@ -168,24 +167,70 @@ class LabelFromCameraGUI():
                 cv2.circle(frameNp,(x,y), self.project.target_radius, self.project.object_colors[i], -1)
         self.imgLabelWidget.value = bgr8_to_jpeg(frameNp)    
     
- 
+    
     def capture_handle_event(self, event):
 
         frame = self.imgVideoWidget.value
-        target=(event["relativeX"],event["relativeY"])
-
-        self.imgSnapshotWidget.value = frame
+          
+        self.imgSnapshot = frame
+        frame_np = cv2.imdecode(np.frombuffer(frame, np.uint8),-1)
+        self.ax.imshow(frame_np)
+        self.fig.canvas.draw()  
         self.imgLabelWidget.value = frame
 
         # set coordinate to 0,0
         for i in range(len(self.project.object_list)):
             self.coordBounded[i][0].value=0
             self.coordBounded[i][1].value=0
-            
-        lines = "{},{}, dataset size:{}".format(target[0],target[1],len(self.dataset))
+        
+        self.objectRadioButtons.value=self.project.object_list[0]
+        
+        lines = "dataset size:{}".format(len(self.dataset))
         content = "  ".join(lines)
         self.htmlWidget.value = content
 
+   
+    def save_handle_event(self,event):
+        """
+        Callback to save image, mask and coordinates to dataset
+        """
+        # get coordinates for each object
+        # arrays with 2 columns for x and y
+
+        coordinates = np.empty((len(self.project.object_list),2))
+        # get the coordinates from widgets
+        # if coordinates are 0,0, the object was not label
+        for i in range(len(self.project.object_list)):
+            if self.coordBounded[i][0].value == 0 and self.coordBounded[i][0].value == 0:
+                coordinates[:,0]=np.nan
+            else:
+                coordinates[i,0] = self.coordBounded[i][0].value
+                coordinates[i,1] = self.coordBounded[i][1].value
+                
+        # create the mask get mask for each object
+        frame = self.imgSnapshot
+        frame = cv2.imdecode(np.frombuffer(frame, np.uint8),-1)
+        mask = self.dataset.create_mask(frame,coordinates,self.project.target_radius)
+        
+        # save the data to the dataset
+        img_path, mask_path, coordinates_path = self.dataset.save_entry(frame,mask,coordinates)
+
+         # set coordinate to 0,0
+        for i in range(len(self.project.object_list)):
+            self.coordBounded[i][0].value=0
+            self.coordBounded[i][1].value=0
+        
+        self.objectRadioButtons.value=self.project.object_list[0]
+        
+        lines = "dataset size:{}".format(len(self.dataset))
+        content = "  ".join(lines)
+        self.htmlWidget.value = content
+        
+        self.imgLabelWidget.value = self.imgSnapshot
+    
+  
+ 
+   
         
     def label_current_frame_with_model(self,image):
         """
