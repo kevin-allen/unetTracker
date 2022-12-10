@@ -38,7 +38,7 @@ source torch/bin/activate
 Within the `torch` environment, run the following.
 
 ```
-pip3 install ipyevents ipywidgets jupyterlab
+pip3 install ipyevents ipywidgets jupyterlab ipympl matplotlib pandas
 ```
 
 
@@ -85,7 +85,7 @@ Remove the current version of nodejs and reinstall the one above.
 ### Install pytorch and some other libraries
 
 ```
-pip3 install torch torchvision matplotlib pandas tqdm  imgaug albumentations 
+pip3 install torch torchvision  tqdm  imgaug albumentations 
 ```
 
 ### Clone the unet-tracker repository
