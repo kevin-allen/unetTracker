@@ -32,62 +32,6 @@ cd
 source torch/bin/activate
 ```
 
-
-### Install ipwidgets, ipyevents and jupyterlab
-
-Within the `torch` environment, run the following.
-
-```
-pip3 install ipyevents ipywidgets jupyterlab ipympl matplotlib pandas
-```
-
-
-### Add a jupyter extension for ipyevents
-
-You will need to create a jupyter extensions that allows us to create a small GUI within the notebook. 
-
-The instructions can be found here: [ipyevents](https://github.com/mwcraig/ipyevents) package.
-
-
-#### nodejs
-
-On my Unbuntu computer, I had to first install a recent nodejs. I got the instructions [here](https://github.com/nodesource/distributions).
-
-```
-sudo apt-get install curl
-curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash - &&\
-sudo apt-get install -y nodejs
-```
-
-You can double-check that the installation worked.
-
-```
-node -v
-```
-
-You should have version 16 installed.
-
-
-Now build the jupyter lab extension
-
-#### Build the ipyevents jupyterlab extension
-
-```
-jupyter labextension install @jupyter-widgets/jupyterlab-manager ipyevents
-```
-
-If you have a warning: `ValueError: Please install nodejs >=12.0.0 before continuing`
-
-Remove the current version of nodejs and reinstall the one above.
-
-
-
-### Install pytorch and some other libraries
-
-```
-pip3 install torch torchvision  tqdm  imgaug albumentations 
-```
-
 ### Clone the unet-tracker repository
 
 ```
@@ -100,19 +44,9 @@ git clone https://github.com/kevin-allen/unetTracker.git
 
 ```
 cd unetTracker
+pip3 install -r requirements.txt 
 python3 -m pip install -e .
 ```
-
-To test that the package is installed. 
-
-```
-ipython
-```
-```
-from unetTracker.trackingProject import TrackingProject
-```
-
-
 
 ### Run jupyter lab
 
@@ -148,9 +82,4 @@ Then paste the address of the jupyter server into your browser. It should look l
 
 
 You will have to make sure that the jupyter lab extensions are enable (click on the icon that looks like a puzzel piece called extension manager, far left of the jupyter lab window).
-
-
-### ipyevents
-
-If you have problem using the GUI part of unetTracker, make sure the ipyevents are working. [Test available here](ipyevents_test.md)
 
