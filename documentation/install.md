@@ -32,21 +32,6 @@ cd
 source torch/bin/activate
 ```
 
-
-### Install ipwidgets, ipyevents and jupyterlab
-
-Within the `torch` environment, run the following.
-
-```
-pip3 install ipyevents ipywidgets jupyterlab ipympl matplotlib pandas
-```
-
-### Install pytorch and some other libraries
-
-```
-pip3 install torch torchvision  tqdm  imgaug albumentations 
-```
-
 ### Clone the unet-tracker repository
 
 ```
@@ -59,19 +44,9 @@ git clone https://github.com/kevin-allen/unetTracker.git
 
 ```
 cd unetTracker
+pip3 install -r requirements.txt 
 python3 -m pip install -e .
 ```
-
-To test that the package is installed. 
-
-```
-ipython
-```
-```
-from unetTracker.trackingProject import TrackingProject
-```
-
-
 
 ### Run jupyter lab
 
