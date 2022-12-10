@@ -1,0 +1,10 @@
+ipywidgets
+jupyterlab
+ipympl
+matplotlib
+pandas
+torch
+torchvision
+tqdm
+imgaug
+albumentations
