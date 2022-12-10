@@ -1,8 +1,6 @@
 import ipywidgets as widgets
 import threading
 from ipywidgets import Label, HTML, HBox, Image, VBox, Box, HBox
-from ipyevents import Event 
-from IPython.display import display
 from unetTracker.camera import bgr8_to_jpeg
 import cv2
 import numpy as np
@@ -303,25 +301,33 @@ class LabelFromCameraGUI(VBox):
 ################################
 ####### work with images #######
 ################################
-class LabelFromImagesGUI():
+
+class LabelFromImagesGUI(VBox):
     """
     Class to label frames from single images.
     """
     def __init__(self,image_dir,project,dataset,model=None):
-
+        super().__init__()
+        
         self.image_dir = image_dir
         self.project = project
         self.dataset = dataset
         self.model = model
         self.image_scaling_factor = self.project.labeling_ImageEnlargeFactor
-        
-        
-        
-        self.imgSnapshotWidget = Image(format='jpeg',height=project.image_size[0]*self.image_scaling_factor, width=project.image_size[1]*self.image_scaling_factor)
-        self.imgLabelWidget =  Image(format='jpeg',height=project.image_size[0], width=project.image_size[1])
+               
+        self.imgLabelWidget =  Image(format='jpeg',height=project.image_size[0]/2, width=project.image_size[1]/2)
         self.htmlWidget = HTML('Event info')
         
-        
+        self.imgSnapshot = None
+        plt.ioff()
+        self.fig = plt.figure()
+        plt.ion()
+        self.fig.canvas.toolbar_visible = False
+        # Disable the resizing feature
+        self.fig.canvas.resizable = True
+        self.fig.canvas.header_visible = False
+        self.ax = self.fig.gca()
+
         self.objectLabel = widgets.Label(value='Objects:')
         self.objectRadioButtons = widgets.RadioButtons(
             options=self.project.object_list,
@@ -351,41 +357,37 @@ class LabelFromImagesGUI():
                             tooltip='Click me',
                             icon='check') # (FontAwesome names without the `fa-` prefix)
         
+        
+        
         self.images =  glob.glob(os.path.join(image_dir,'*.jpg'))
         self.imageIndex = 0
-        frame = cv2.imread(self.images[self.imageIndex],0)
-        self.imgSnapshotWidget.value = bgr8_to_jpeg(frame)
+        frame = cv2.imread(self.images[self.imageIndex])
+        print("frame.shape:",frame.shape)
+        self.imgSnapshot = bgr8_to_jpeg(frame)
+        self.ax.imshow(frame)
+        #self.fig.canvas.draw()  
         self.imgLabelWidget.value = bgr8_to_jpeg(frame)
         
         """
         Events handling
         """
         
-        self.nextEvent =  Event(source=self.nextButton, watched_events=['click'])
-        self.nextEvent.on_dom_event(self.next_handle_event)
+        self.nextButton.on_click(self.next_handle_event)
+        self.saveButton.on_click(self.save_handle_event)
         
+        # deal with click on the mpl canvas
+        self.cid = self.fig.canvas.mpl_connect('button_press_event', self.add_coordinates_handle_event)
+       
         
-        
-        
-        self.addCoordinatesEvent = Event(source=self.imgSnapshotWidget, watched_events=['click'])
-        self.addCoordinatesEvent.on_dom_event(self.add_coordinates_handle_event)
-        
-        self.saveEvent =  Event(source=self.saveButton, watched_events=['click'])
-        self.saveEvent.on_dom_event(self.save_handle_event)
         
         """
         Fill images with a default image
         """
-        
-       
-       # self.imgVideoWidget.value = bgr8_to_jpeg(image)
-        #self.imgSnapshotWidget.value = bgr8_to_jpeg(image)
-        #self.imgLabelWidget.value = bgr8_to_jpeg(image)
-        
-        display(VBox([self.htmlWidget, self.coordinatesBox, HBox([self.imgSnapshotWidget,self.nextButton]),HBox([self.imgLabelWidget,self.saveButton])]))
-        
-        self.get_next_image()
+        #self.get_next_image()
 
+        self.children = [self.htmlWidget, self.coordinatesBox, self.nextButton,self.fig.canvas, HBox([self.imgLabelWidget,self.saveButton])]
+        #self.children = [self.fig.canvas,self.coordinatesBox,self.imgLabelWidget]
+       
 
     def get_next_image(self):
         self.imageIndex = self.imageIndex+1
@@ -396,14 +398,19 @@ class LabelFromImagesGUI():
                 
         frame = cv2.imread(self.images[self.imageIndex])
         
-        self.imgSnapshotWidget.value = bgr8_to_jpeg(frame)
+        self.imgSnapshot = bgr8_to_jpeg(frame)
         self.imgLabelWidget.value = bgr8_to_jpeg(frame)
+        
+        self.ax.imshow(frame)
+        self.fig.canvas.draw()
         
         # set coordinate to 0,0
         for i in range(len(self.project.object_list)):
             self.coordBounded[i][0].value=0
             self.coordBounded[i][1].value=0
-
+         
+        self.objectRadioButtons.value=self.project.object_list[0]
+        
         lines = "image {} of {}".format(self.imageIndex,len(self.images))
         content = "  ".join(lines)
         self.htmlWidget.value = content
@@ -420,24 +427,36 @@ class LabelFromImagesGUI():
     def save_handle_event(self,event):
         # get coordinates for each object
         # arrays with 2 columns for x and y
-       
-        coordinates = np.empty((len(self.project.object_list),2))
       
+        coordinates = np.empty((len(self.project.object_list),2))
+        # get the coordinates from widgets
+        # if coordinates are 0,0, the object was not label
         for i in range(len(self.project.object_list)):
             if self.coordBounded[i][0].value == 0 and self.coordBounded[i][0].value == 0:
                 coordinates[:,0]=np.nan
             else:
-               
                 coordinates[i,0] = self.coordBounded[i][0].value
                 coordinates[i,1] = self.coordBounded[i][1].value
-       
+                
         # create the mask get mask for each object
-        frame = self.imgSnapshotWidget.value
+        frame = self.imgSnapshot
         frame = cv2.imdecode(np.frombuffer(frame, np.uint8),-1)
         mask = self.dataset.create_mask(frame,coordinates,self.project.target_radius)
-        img_path, mask_path, coordinates_path = self.dataset.save_entry(frame,mask,coordinates)
         
-       
+        # save the data to the dataset
+        img_path, mask_path, coordinates_path = self.dataset.save_entry(frame,mask,coordinates)
+
+         # set coordinate to 0,0
+        for i in range(len(self.project.object_list)):
+            self.coordBounded[i][0].value=0
+            self.coordBounded[i][1].value=0
+        
+        self.objectRadioButtons.value=self.project.object_list[0]
+        
+        lines = "dataset size:{}".format(len(self.dataset))
+        content = "  ".join(lines)
+        self.htmlWidget.value = content
+            
         # remove this image from the extracted folder
         fn = self.images[self.imageIndex]
         os.remove(fn)
@@ -451,8 +470,7 @@ class LabelFromImagesGUI():
         """
         Clicking to add a coordinate to an object
         """
-
-        target=(round(event["relativeX"]/self.image_scaling_factor),round(event["relativeY"]/self.image_scaling_factor))
+        target=(event.xdata,event.ydata)
         selectedObject = self.objectRadioButtons.value
         objectIndex = self.project.object_list.index(selectedObject)
 
@@ -472,7 +490,7 @@ class LabelFromImagesGUI():
         self.objectRadioButtons.value=self.project.object_list[objectIndex]
 
         # label the frame with current coordinates
-        frame = self.imgSnapshotWidget.value
+        frame = self.imgSnapshot
         frameNp = cv2.imdecode(np.frombuffer(frame, np.uint8),-1)
 
         for i,myObject in enumerate(self.project.object_list):
@@ -482,17 +500,13 @@ class LabelFromImagesGUI():
                 cv2.circle(frameNp,(x,y), self.project.target_radius, self.project.object_colors[i], -1)
         self.imgLabelWidget.value = bgr8_to_jpeg(frameNp)    
     
+    
+    
+    
+    
+    
+    
 
-    
-    
-    
-    
-    
-    
-    
-        
-
-    
 ################################
 ####### review a dataset #######
 ################################
@@ -530,17 +544,9 @@ class ReviewDatasetGUI():
                             icon='check') # (FontAwesome names without the `fa-` prefix)
         
         
-        self.previousEvent = Event(source=self.previousButton, watched_events=['click'])
-        self.previousEvent.on_dom_event(self.previous_handle_event)
-        
-        self.nextEvent = Event(source=self.nextButton, watched_events=['click'])
-        self.nextEvent.on_dom_event(self.next_handle_event)
-        
-        
-        self.deleteEvent = Event(source=self.deleteButton, watched_events=['click'])
-        self.deleteEvent.on_dom_event(self.delete_handle_event)
-        
-        
+        self.previousButton.on_click(self.previous_handle_event)
+        self.nextButton.on_click(self.next_handle_event)
+        self.deleteButton.on_click(self.delete_handle_event)
         
         self.imageIndex = 0
         frame = self.get_labelled_image(self.imageIndex)
@@ -625,6 +631,9 @@ class ReviewDatasetGUI():
                 cv2.circle(frame,(x,y), self.project.target_radius, self.project.object_colors[i], -1)
         return frame
         
+        
+
+    
 
         
 #############################################
