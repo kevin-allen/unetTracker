@@ -200,7 +200,7 @@ class LabelFromCameraGUI(VBox):
         # if coordinates are 0,0, the object was not label
         for i in range(len(self.project.object_list)):
             if self.coordBounded[i][0].value == 0 and self.coordBounded[i][0].value == 0:
-                coordinates[:,0]=np.nan
+                coordinates[i,:]=np.nan
             else:
                 coordinates[i,0] = self.coordBounded[i][0].value
                 coordinates[i,1] = self.coordBounded[i][1].value
@@ -433,7 +433,7 @@ class LabelFromImagesGUI(VBox):
         # if coordinates are 0,0, the object was not label
         for i in range(len(self.project.object_list)):
             if self.coordBounded[i][0].value == 0 and self.coordBounded[i][0].value == 0:
-                coordinates[:,0]=np.nan
+                coordinates[i,:]=np.nan
             else:
                 coordinates[i,0] = self.coordBounded[i][0].value
                 coordinates[i,1] = self.coordBounded[i][1].value
@@ -887,7 +887,7 @@ class LabelFromVideoGUI():
       
         for i in range(len(self.project.object_list)):
             if self.coordBounded[i][0].value == 0 and self.coordBounded[i][0].value == 0:
-                coordinates[:,0]=np.nan
+                coordinates[i,:]=np.nan
             else:
                
                 coordinates[i,0] = self.coordBounded[i][0].value
