@@ -34,6 +34,16 @@ class UNetDataset(torch.utils.data.Dataset):
         self.mask_dir = mask_dir
         self.coordinate_dir = coordinate_dir
         
+        
+        # if the directories do not exist, try creating them
+        for direct in [self.image_dir,self.mask_dir,self.coordinate_dir]:
+            if not os.path.exists(direct):
+                print("Create",direct)
+                os.makedirs(direct)
+            
+        
+        
+        
         self.images = [ntpath.basename(path) for path in glob.glob(os.path.join(image_dir,'*.jpg'))]
         self.masks = [ fn.replace(".jpg",'_mask.npy') for fn in self.images]
         
@@ -144,6 +154,7 @@ class UNetDataset(torch.utils.data.Dataset):
         
         filename = filename_img.replace(".jpg",'_coordinates.csv')
         coordinates_path = os.path.join(self.coordinate_dir, filename)
+        print(coordinates)
         np.savetxt(coordinates_path, coordinates)
         
         self.images = [ntpath.basename(path) for path in glob.glob(os.path.join(self.image_dir,'*.jpg'))]

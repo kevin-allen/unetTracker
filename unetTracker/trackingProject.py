@@ -30,6 +30,7 @@ class TrackingProject():
         self.config_fn = os.path.join(self.project_dir,"config.yalm")
         self.model_fn = os.path.join(self.models_dir,"UNet.pt")
         self.image_size = [480,640]  # height,width
+        self.unet_features =[64,128,256,512] # number of filters at the different levels of the U-Net
         
         
         # variables for data augmentation
@@ -127,6 +128,7 @@ class TrackingProject():
                     "objects":self.object_list, 
                     "object_colors":self.object_colors,
                     "target_radius":self.target_radius,
+                    "unet_features":self.unet_features,
                     "image_size":self.image_size,
                     "augmentation_RandomSizedCropProb": self.augmentation_RandomSizedCropProb,
                     "augmentation_HorizontalFlipProb": self.augmentation_HorizontalFlipProb,
@@ -150,6 +152,7 @@ class TrackingProject():
             self.object_list=self.configDict["objects"]
             self.object_colors = self.configDict["object_colors"]
             self.target_radius = self.configDict["target_radius"]
+            self.unet_features = self.configDict["unet_features"]
             self.image_size = self.configDict["image_size"]
             self.augmentation_RandomSizedCropProb = self.configDict["augmentation_RandomSizedCropProb"]
             self.augmentation_HorizontalFlipProb = self.configDict["augmentation_HorizontalFlipProb"]

@@ -11,6 +11,17 @@ import ntpath
 import albumentations as A
 import matplotlib.pyplot as plt
 
+"""
+This is the code for the unetTracker GUI
+
+Trick to debug a callback function:
+1. Declare this widget globally: debug_view = widgets.Output(layout={'border': '1px solid black'})
+2. Put the widget in the list of children so that it is visible
+3. Put this line immediately above the function you want to see the output: @debug_view.capture(clear_output=True)   
+"""
+
+debug_view = widgets.Output(layout={'border': '1px solid black'})
+
 
 class LabelFromCameraGUI(VBox):
     """
@@ -302,6 +313,8 @@ class LabelFromCameraGUI(VBox):
 ####### work with images #######
 ################################
 
+
+
 class LabelFromImagesGUI(VBox):
     """
     Class to label frames from single images.
@@ -361,6 +374,10 @@ class LabelFromImagesGUI(VBox):
         
         self.images =  glob.glob(os.path.join(image_dir,'*.jpg'))
         self.imageIndex = 0
+        
+        if len(self.images) == 0:
+            raise ValueError(f"No image found in {self.image_dir}")
+        
         frame = cv2.imread(self.images[self.imageIndex])
         print("frame.shape:",frame.shape)
         self.imgSnapshot = bgr8_to_jpeg(frame)
@@ -385,7 +402,9 @@ class LabelFromImagesGUI(VBox):
         """
         #self.get_next_image()
 
-        self.children = [self.htmlWidget, self.coordinatesBox, self.nextButton,self.fig.canvas, HBox([self.imgLabelWidget,self.saveButton])]
+        self.children = [self.htmlWidget, self.coordinatesBox, self.nextButton,self.fig.canvas, 
+                         HBox([self.imgLabelWidget,self.saveButton]),
+                        debug_view]
         #self.children = [self.fig.canvas,self.coordinatesBox,self.imgLabelWidget]
        
 
@@ -400,6 +419,7 @@ class LabelFromImagesGUI(VBox):
         
         self.imgSnapshot = bgr8_to_jpeg(frame)
         self.imgLabelWidget.value = bgr8_to_jpeg(frame)
+        
         
         self.ax.imshow(frame)
         self.fig.canvas.draw()
@@ -423,7 +443,7 @@ class LabelFromImagesGUI(VBox):
     def next_handle_event(self, event):
         self.get_next_image()
         
-        
+    @debug_view.capture(clear_output=True) 
     def save_handle_event(self,event):
         # get coordinates for each object
         # arrays with 2 columns for x and y
@@ -501,138 +521,6 @@ class LabelFromImagesGUI(VBox):
         self.imgLabelWidget.value = bgr8_to_jpeg(frameNp)    
     
     
-    
-    
-    
-    
-    
-
-################################
-####### review a dataset #######
-################################
-class ReviewDatasetGUI():
-    """
-    Class to label frames from a camera feed.
-    """
-    def __init__(self,project,dataset):
-
-        self.project = project
-        self.dataset = dataset
-        
-        self.imgWidget = Image(format='jpeg',height=project.image_size[0], width=project.image_size[1])
-        self.htmlWidget = HTML('Event info')
-        self.frameNameWidget = HTML('Frame name')
-        
-        
-        self.previousButton = widgets.Button(description='Previous frame',
-                            disabled=False,
-                            button_style='', # 'success', 'info', 'warning', 'danger' or ''
-                            tooltip='Click me',
-                            icon='check') # (FontAwesome names without the `fa-` prefix)
-        
-        self.nextButton = widgets.Button(description='Next frame',
-                            disabled=False,
-                            button_style='', # 'success', 'info', 'warning', 'danger' or ''
-                            tooltip='Click me',
-                            icon='check') # (FontAwesome names without the `fa-` prefix)
-        
-        
-        self.deleteButton = widgets.Button(description='Delete frame',
-                            disabled=False,
-                            button_style='', # 'success', 'info', 'warning', 'danger' or ''
-                            tooltip='Click me',
-                            icon='check') # (FontAwesome names without the `fa-` prefix)
-        
-        
-        self.previousButton.on_click(self.previous_handle_event)
-        self.nextButton.on_click(self.next_handle_event)
-        self.deleteButton.on_click(self.delete_handle_event)
-        
-        self.imageIndex = 0
-        frame = self.get_labelled_image(self.imageIndex)
-        self.imgWidget.value = bgr8_to_jpeg(frame)
-        
-        fn = self.dataset.get_image_file_name(self.imageIndex)
-        lines = ntpath.basename(fn) 
-        content = "  ".join(lines)
-        self.frameNameWidget.value = content   
-        
-        
-        
-        lines = "{} / {}".format(self.imageIndex,len(dataset))
-        content = "  ".join(lines)
-        self.htmlWidget.value = content   
-            
-        display(VBox([HBox([self.htmlWidget, self.previousButton, self.nextButton, self.deleteButton]),
-                      self.frameNameWidget,
-                      self.imgWidget]))
-    
-    def delete_handle_event(self,event):
-        self.dataset.delete_entry(self.imageIndex)
-        
-        frame = self.get_labelled_image(self.imageIndex)
-        fn = self.dataset.get_image_file_name(self.imageIndex)
-        self.imgWidget.value = bgr8_to_jpeg(frame)
-        
-        fn = self.dataset.get_image_file_name(self.imageIndex)
-        lines = ntpath.basename(fn) 
-        content = "  ".join(lines)
-        self.frameNameWidget.value = content   
-        
-
-    def previous_handle_event(self,event):
-        self.imageIndex-=1
-        if self.imageIndex < 0:
-            self.imageIndex =  len(self.dataset)-1
-       
-        fn = self.dataset.get_image_file_name(self.imageIndex)
-        lines = ntpath.basename(fn) 
-        content = "  ".join(lines)
-        self.frameNameWidget.value = content   
-    
-        lines = "{} / {}".format(self.imageIndex,len(self.dataset))
-        content = "  ".join(lines)
-        self.htmlWidget.value = content   
-        
-        frame = self.get_labelled_image(self.imageIndex)
-        self.imgWidget.value = bgr8_to_jpeg(frame)    
-       
-        
-    def next_handle_event(self,event):
-        self.imageIndex+=1
-        if self.imageIndex >= len(self.dataset):
-            self.imageIndex = 0
-        
-        fn = self.dataset.get_image_file_name(self.imageIndex)
-        lines = ntpath.basename(fn) 
-        content = "  ".join(lines)
-        self.frameNameWidget.value = content   
-       
-        lines = "{} / {}".format(self.imageIndex,len(self.dataset))
-        content = "  ".join(lines)
-        self.htmlWidget.value = content   
-    
-    
-        frame = self.get_labelled_image(self.imageIndex)
-        
-       
-        
-        self.imgWidget.value = bgr8_to_jpeg(frame)
-        
-    
-    def get_labelled_image(self,index):
-        frame,mask,coord = self.dataset[self.imageIndex]
-        frame = frame.permute(1,2,0).numpy()
-        
-        for i,myObject in enumerate(self.project.object_list):
-            x=int(coord[i][0])
-            y=int(coord[i][1])
-            if(x!=0 and y!=0):
-                cv2.circle(frame,(x,y), self.project.target_radius, self.project.object_colors[i], -1)
-        return frame
-        
-        
-
     
 
         
@@ -940,4 +828,132 @@ class LabelFromVideoGUI():
         self.imgLabelWidget.value = bgr8_to_jpeg(frameNp)    
     
        
+
+################################
+####### review a dataset #######
+################################
+class ReviewDatasetGUI():
+    """
+    Class to label frames from a camera feed.
+    """
+    def __init__(self,project,dataset):
+
+        self.project = project
+        self.dataset = dataset
+        
+        self.imgWidget = Image(format='jpeg',height=project.image_size[0], width=project.image_size[1])
+        self.htmlWidget = HTML('Event info')
+        self.frameNameWidget = HTML('Frame name')
+        
+        
+        self.previousButton = widgets.Button(description='Previous frame',
+                            disabled=False,
+                            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                            tooltip='Click me',
+                            icon='check') # (FontAwesome names without the `fa-` prefix)
+        
+        self.nextButton = widgets.Button(description='Next frame',
+                            disabled=False,
+                            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                            tooltip='Click me',
+                            icon='check') # (FontAwesome names without the `fa-` prefix)
+        
+        
+        self.deleteButton = widgets.Button(description='Delete frame',
+                            disabled=False,
+                            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                            tooltip='Click me',
+                            icon='check') # (FontAwesome names without the `fa-` prefix)
+        
+        
+        self.previousButton.on_click(self.previous_handle_event)
+        self.nextButton.on_click(self.next_handle_event)
+        self.deleteButton.on_click(self.delete_handle_event)
+        
+        self.imageIndex = 0
+        frame = self.get_labelled_image(self.imageIndex)
+        self.imgWidget.value = bgr8_to_jpeg(frame)
+        
+        fn = self.dataset.get_image_file_name(self.imageIndex)
+        lines = ntpath.basename(fn) 
+        content = "  ".join(lines)
+        self.frameNameWidget.value = content   
+        
+        
+        
+        lines = "{} / {}".format(self.imageIndex,len(dataset))
+        content = "  ".join(lines)
+        self.htmlWidget.value = content   
+            
+        display(VBox([HBox([self.htmlWidget, self.previousButton, self.nextButton, self.deleteButton]),
+                      self.frameNameWidget,
+                      self.imgWidget]),
+               debug_view)
+    
+    def delete_handle_event(self,event):
+        self.dataset.delete_entry(self.imageIndex)
+        
+        frame = self.get_labelled_image(self.imageIndex)
+        fn = self.dataset.get_image_file_name(self.imageIndex)
+        self.imgWidget.value = bgr8_to_jpeg(frame)
+        
+        fn = self.dataset.get_image_file_name(self.imageIndex)
+        lines = ntpath.basename(fn) 
+        content = "  ".join(lines)
+        self.frameNameWidget.value = content   
+        
+
+    def previous_handle_event(self,event):
+        self.imageIndex-=1
+        if self.imageIndex < 0:
+            self.imageIndex =  len(self.dataset)-1
+       
+        fn = self.dataset.get_image_file_name(self.imageIndex)
+        lines = ntpath.basename(fn) 
+        content = "  ".join(lines)
+        self.frameNameWidget.value = content   
+    
+        lines = "{} / {}".format(self.imageIndex,len(self.dataset))
+        content = "  ".join(lines)
+        self.htmlWidget.value = content   
+        
+        frame = self.get_labelled_image(self.imageIndex)
+        self.imgWidget.value = bgr8_to_jpeg(frame)    
+       
+     
+    def next_handle_event(self,event):
+        self.imageIndex+=1
+        if self.imageIndex >= len(self.dataset):
+            self.imageIndex = 0
+        
+        fn = self.dataset.get_image_file_name(self.imageIndex)
+        lines = ntpath.basename(fn) 
+        content = "  ".join(lines)
+        self.frameNameWidget.value = content   
+       
+        lines = "{} / {}".format(self.imageIndex,len(self.dataset))
+        content = "  ".join(lines)
+        self.htmlWidget.value = content   
+    
+    
+        frame = self.get_labelled_image(self.imageIndex)
+        
+       
+        
+        self.imgWidget.value = bgr8_to_jpeg(frame)
+        
+    
+    def get_labelled_image(self,index):
+        frame,mask,coord = self.dataset[self.imageIndex]
+        frame = frame.permute(1,2,0).numpy()
+        
+        for i,myObject in enumerate(self.project.object_list):
+            x = coord[i][0]
+            y = coord[i][1]
+            if not np.any(np.isnan(coord[i,:])):
+                x=int(x)
+                y=int(y)
+                cv2.circle(frame,(x,y), self.project.target_radius, self.project.object_colors[i], -1)
+        return frame
+        
         
