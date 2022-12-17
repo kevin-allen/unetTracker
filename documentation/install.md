@@ -47,6 +47,10 @@ cd unetTracker
 pip3 install -r requirements.txt 
 python3 -m pip install -e .
 ```
+### PyTorch for Jetson
+
+If you are using a Nvidia Jetson instead of a Linux PC, you probably want to install Pytorch as indicated on the [Nvidia website](https://forums.developer.nvidia.com/t/pytorch-for-jetson/72048)
+
 
 ### Run jupyter lab
 
