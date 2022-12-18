@@ -40,6 +40,11 @@ docker run --gpus all -it --rm --device /dev/video0  --shm-size 10G   -p 8888:88
 
 When within your Docker image, you might want to save your work and access data located on the host computer running the container. You can mount these file system using the --volume argument. The change you make within these mounted directories will be preserved when you shut down the container.
 
+In the example below, I am accessing 2 directories on the host machine.
+
+* My python code that I might want to modify
+* A directory with the data of my tracking projects (unetTracker project, datasets, etc.).
+
 ```
 docker run --gpus all -it --rm --device /dev/video0 -p 8888:8888 --volume /home/kevin/Documents/trackingProjects:/home/kevin/Documents/trackingProjects --volume /home/kevin/repo:/usr/src/app/repo --shm-size 10G  unettracker
 ```
