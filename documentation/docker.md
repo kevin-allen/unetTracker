@@ -25,7 +25,8 @@ You should see the image running `docker images`.
 
 ## Runing the docker image
 
-Running the image will launch a jupyter lab server that you can access at http://localhost:8888.
+Running the image will launch a jupyter lab server that you can access at http://localhost:8888 using your browser.
+
 The password is `unet`.
 
 ```
