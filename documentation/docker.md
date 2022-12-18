@@ -14,6 +14,7 @@ sudo docker run --rm --gpus all nvidia/cuda:11.6.2-base-ubuntu20.04 nvidia-smi
 
 ## Create a docker image with pytorch and unetTracker
 
+I created a simple Dockerfile in the unetTracker repository. You can use it to build your own image.
 
 ```
 cd ~/repo/unetTracker
@@ -37,11 +38,5 @@ docker run --gpus all -it --rm --device /dev/video0  --shm-size 10G   -p 8888:88
 To add access to some directories on the host.
 
 ```
-docker run --gpus all -it --rm --device /dev/video0 -p 8888:8888 --volume /home/kevin/Documents/trackingProjects:/home/kevin/Documents/trackingProjects  --shm-size 10G  unettracker
+docker run --gpus all -it --rm --device /dev/video0 -p 8888:8888 --volume /home/kevin/Documents/trackingProjects:/home/kevin/Documents/trackingProjects --volume /home/kevin/repo:/usr/src/app/repo --shm-size 10G  unettracker
 ```
-
-
-##
-trt_ts_module = torch_tensorrt.compile(traced_model,  
-    inputs = [torch_tensorrt.Input([2, 3, 480, 640], dtype=torch.float)], # Datatype of input tensor. Allowed options torch.(float|half|int8|int32|bool),
-    enabled_precisions = {torch.half}) # Run with FP16)
