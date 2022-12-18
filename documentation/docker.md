@@ -51,23 +51,15 @@ docker build -t unettracker:latest .
 ```
 
 
-## Runing the docker image
+
+
+
+## Runing the docker image and accessing the file system of the host computer
 
 Running the image will launch a jupyter lab server that you can access at http://localhost:8888 using your browser.
 
 The password is `unet`.
 
-```
-docker run --gpus all -it --rm --shm-size 10G -p 8888:8888 unettracker
-```
-
-To add access to a camera.
- 
-```
-docker run --gpus all -it --rm --device /dev/video0  --shm-size 10G   -p 8888:8888 unettracker 
-```
-
-## Runing the docker image and accessing the file system of the host computer
 
 When within your Docker image, you might want to save your work and access data located on the host computer running the container. You can mount these file system using the --volume argument. The change you make within these mounted directories will be preserved when you shut down the container.
 
