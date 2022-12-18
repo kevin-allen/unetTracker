@@ -4,7 +4,7 @@
 
 Follow the steps here to install docker : https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html
 
-Whatever you do, don't use snap to install docker.
+Whatever you do, don't use snap to install docker. This version will not give you access to the GPU.
 
 You can follow these steps to run docker without having to use sudo all the time: https://docs.docker.com/engine/install/linux-postinstall/
 
