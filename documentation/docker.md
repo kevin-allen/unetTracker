@@ -85,3 +85,7 @@ Run this in a jupyter notebook.
 ```
 ! cd /usr/src/app/repo/unetTracker && ! python3 -m pip install -e .
 ```
+
+## Automatically restart the container at boot time
+
+...
