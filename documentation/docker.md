@@ -77,3 +77,9 @@ On Jetson
 ```
 docker run --runtime nvidia  -it --rm -p 8888:8888  --device /dev/video0 --shm-size 16G   --volume /home/kevin/Documents/trackingProjects:/home/kevin/Documents/trackingProjects --volume /home/kevin/repo:/usr/src/app/repo  unettracker
 ```
+
+## Install UnetTracker in the container
+
+Run this in a jupyter notebook.
+
+! cd /usr/src/app/repo/unetTracker && ! python3 -m pip install -e .
