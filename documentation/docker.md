@@ -25,6 +25,8 @@ You should see the image running `docker images`.
 
 ## Runing the docker image
 
+Running the image will launch a jupyter lab server that you can access at http://localhost:8888.
+The password is `unet`.
 
 ```
 docker run --gpus all -it --rm --shm-size 10G -p 8888:8888 unettracker
