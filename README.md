@@ -11,6 +11,7 @@ The project uses PyTorch as a deep learning framework. You will need access to a
 We have develop this code on computers running Ubuntu 20.04.
 
 * [Local installation](documentation/install.md)
+* [unetTracker in a Docker container](documentation/docker.md)
 * [Google colab](documentation/colab.md)
 * [Getting started](documentation/getting_started.md)
 
