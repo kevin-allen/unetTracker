@@ -6,6 +6,8 @@ Follow the steps here to install docker : https://docs.nvidia.com/datacenter/clo
 
 Whatever you do, don't use snap to install docker.
 
+You can follow these steps to run docker without having to use sudo all the time: https://docs.docker.com/engine/install/linux-postinstall/
+
 You should be able to run this command if all goes well, and get the nvidia-smi output.
 
 ```
