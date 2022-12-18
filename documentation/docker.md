@@ -10,13 +10,25 @@ You can follow these steps to run docker without having to use sudo all the time
 
 You should be able to run this command if all goes well, and get the nvidia-smi output.
 
+
+## Desktop computer and Jetson
+
+We need to build the image using a different image as the base depending on whether we are creating the image for a Jetson or a desktop computer.
+
+The Docker file for the desktop Ubuntu computer is in `unetTracker/Docker` and the one for Jetson is in `unetTracker/Docker_jetson`.
+
+
+## Create a docker image with pytorch and unetTracker (Desktop computer)
+
+Run this to make sure that docker has access to your GPU.
+
 ```
 docker run --rm --gpus all nvidia/cuda:11.6.2-base-ubuntu20.04 nvidia-smi
 ```
 
-## Create a docker image with pytorch and unetTracker
+I created a simple Dockerfile in the `unetTracker/Docker` directory. You can use it to build your own image.
 
-I created a simple Dockerfile in the unetTracker repository. You can use it to build your own image.
+You might want to check that the base image at the top of the Docker file is suitable for your computer.
 
 ```
 cd ~/repo/unetTracker/Docker
@@ -24,6 +36,24 @@ docker build -t unettracker:latest .
 ```
 
 You should see the image running `docker images`.
+
+## Create a docker image with pytorch and unetTracker (Jetson computer)
+
+I created a simple Dockerfile in the `unetTracker/Docker` directory. You can use it to build your own image.
+
+You might want to check that the base image at the top of the Docker file is suitable for your Jetpack.
+
+You can run `cat /etc/` to check which version of the JetPack you have installed. This will determine which base image you can use.
+
+```
+cd ~/repo/unetTracker/Docker_jetson
+docker build -t unettracker:latest .
+```
+On Jetson
+
+```
+docker run --runtime nvidia  -it --rm --network host  --device /dev/video0 --volume /home/kevin/Documents/trackingProjects:/home/kevin/Documents/trackingProjects --volume /home/kevin/repo:/usr/src/app/repo  unettracker
+```
 
 ## Runing the docker image
 
