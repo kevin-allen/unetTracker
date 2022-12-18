@@ -82,4 +82,6 @@ docker run --runtime nvidia  -it --rm -p 8888:8888  --device /dev/video0 --shm-s
 
 Run this in a jupyter notebook.
 
+```
 ! cd /usr/src/app/repo/unetTracker && ! python3 -m pip install -e .
+```
