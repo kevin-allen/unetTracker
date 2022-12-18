@@ -17,7 +17,7 @@ sudo docker run --rm --gpus all nvidia/cuda:11.6.2-base-ubuntu20.04 nvidia-smi
 I created a simple Dockerfile in the unetTracker repository. You can use it to build your own image.
 
 ```
-cd ~/repo/unetTracker
+cd ~/repo/unetTracker/Docker
 docker build -t unettracker:latest .
 ```
 
