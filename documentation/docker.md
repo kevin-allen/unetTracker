@@ -39,3 +39,9 @@ To add access to some directories on the host.
 ```
 docker run --gpus all -it --rm --device /dev/video0 -p 8888:8888 --volume /home/kevin/Documents/trackingProjects:/home/kevin/Documents/trackingProjects  --shm-size 10G  unettracker
 ```
+
+
+##
+trt_ts_module = torch_tensorrt.compile(traced_model,  
+    inputs = [torch_tensorrt.Input([2, 3, 480, 640], dtype=torch.float)], # Datatype of input tensor. Allowed options torch.(float|half|int8|int32|bool),
+    enabled_precisions = {torch.half}) # Run with FP16)
