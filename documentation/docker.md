@@ -9,7 +9,7 @@ Whatever you do, don't use snap to install docker.
 You should be able to run this command if all goes well, and get the nvidia-smi output.
 
 ```
-sudo docker run --rm --gpus all nvidia/cuda:11.6.2-base-ubuntu20.04 nvidia-smi
+docker run --rm --gpus all nvidia/cuda:11.6.2-base-ubuntu20.04 nvidia-smi
 ```
 
 ## Create a docker image with pytorch and unetTracker
