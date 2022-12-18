@@ -25,5 +25,17 @@ You should see the image running `docker images`.
 ## Runing the docker image
 
 ```
-docker run --gpus all -it --rm  -p 8888:8888 unettracker
+docker run --gpus all -it --rm --shm-size 10G -p 8888:8888 unettracker
+```
+
+To add access to a camera.
+ 
+```
+docker run --gpus all -it --rm --device /dev/video0  --shm-size 10G   -p 8888:8888 unettracker 
+```
+
+To add access to some directories on the host.
+
+```
+docker run --gpus all -it --rm --device /dev/video0 -p 8888:8888 --volume /home/kevin/Documents/trackingProjects:/home/kevin/Documents/trackingProjects  --shm-size 10G  unettracker
 ```
