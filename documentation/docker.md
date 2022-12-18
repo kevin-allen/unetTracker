@@ -49,11 +49,7 @@ You can run `cat /etc/` to check which version of the JetPack you have installed
 cd ~/repo/unetTracker/Docker_jetson
 docker build -t unettracker:latest .
 ```
-On Jetson
 
-```
-docker run --runtime nvidia  -it --rm --network host  --device /dev/video0 --volume /home/kevin/Documents/trackingProjects:/home/kevin/Documents/trackingProjects --volume /home/kevin/repo:/usr/src/app/repo  unettracker
-```
 
 ## Runing the docker image
 
@@ -80,6 +76,12 @@ In the example below, I am accessing 2 directories on the host machine.
 * My python code that I might want to modify
 * A directory with the data of my tracking projects (unetTracker project, datasets, etc.).
 
+On Desktop
 ```
 docker run --gpus all -it --rm --device /dev/video0 -p 8888:8888 --volume /home/kevin/Documents/trackingProjects:/home/kevin/Documents/trackingProjects --volume /home/kevin/repo:/usr/src/app/repo --shm-size 10G  unettracker
+```
+
+On Jetson
+```
+docker run --runtime nvidia  -it --rm -p 8888:8888  --device /dev/video0 --shm-size 16G   --volume /home/kevin/Documents/trackingProjects:/home/kevin/Documents/trackingProjects --volume /home/kevin/repo:/usr/src/app/repo  unettracker
 ```
