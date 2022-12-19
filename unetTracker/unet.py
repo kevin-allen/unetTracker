@@ -64,7 +64,7 @@ class Unet(nn.Module):
             x = self.pool(x)
             
         x = self.bottleneck(x)
-        skip_connections = skip_connections[::-1] # reverse the list
+        skip_connections = skip_connections[::-1] # reverse the list (now from small to large image size)
         
         for idx in range(0, len(self.ups), 2): # we do up 
             x = self.ups[idx](x) # apply doubleConv, increase the size of image by 2
@@ -73,7 +73,7 @@ class Unet(nn.Module):
             if x.shape != skip_connection.shape:
                 # This happens if the image width and height size is not divisible by 16
                 # This could affect performance but only by a few pixels.
-                print("resize()", x.shape,skip_connection.shape)
+                # print("resize()", x.shape,skip_connection.shape)
                 x = TF.resize(x,size=skip_connection.shape[2:]) # we don't touch batch size and number of channels
                                                                     
             concat_skip = torch.cat((skip_connection,x),dim=1) # concatenate x and skip
