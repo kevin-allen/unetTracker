@@ -1,6 +1,8 @@
 # unetTracker
 
-Code to train a U-Net to track objects in images, videos, or camera feeds. For each image, we get a x,y coordinate for each tracked object together with a probability that the object is in the image.
+Code to train a U-Net to track objects in images, videos, or camera feeds. 
+
+For each image, we get a x,y coordinate for each tracked object together with a probability that the object is in the image.
 
 There is a series Jupyter notebooks that get you through the steps required to train your network, assess how good it is, improve it, process videos and export it.
 
