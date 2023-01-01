@@ -2,7 +2,7 @@
 
 Code to train and deploy a U-Net to track objects in images, videos, or camera feeds. For each image, we get a coordinate for each tracked object if they are visible in the image.
 
-There is a series Jupyter notebooks that get you through the steps required to train your network, assess how good it is, improve it, and process videos.
+There is a series Jupyter notebooks that get you through the steps required to train your network, assess how good it is, improve it, process videos and export your model.
 
 You can work from saved videos or from a camera.
 
