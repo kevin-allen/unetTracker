@@ -6,9 +6,21 @@ import pandas as pd
 from tqdm import tqdm
 import torch
 
-def extract_object_position_from_video(project,transform,model,device,video_fn,blobMinArea=30):
+
+def extract_object_position_from_video(project,transform,model,device,video_fn,blobMinArea=30,nFrames=None,BGR2RGBTransformation=True,plotData=False):
     """
     Function to extract the position of objects in a video
+    Arguments
+    project: your unet project object
+    transform: tranformation to apply, usually the same as for the validation set. You don't want to apply rotation, flip, etc. Only normalization
+    model: model for the inference
+    device: on which device the model is
+    video_fn: path of the video file 
+    blobMinArea: minimal size of the blob that will be considered, goes to the openCV function.
+    nFrames: number of frames to process. Will start at frame 0 and go up to nFrame. If not given the whole file is processed
+    BGR2RGBTransformation: whether to apply a BGR to RGB transformation. This should be the same as when you load images in your dataset class
+    plotData: plot the images used as model input and the output of the model. Only use this for debugging as it will be slow.
+    
     
     Return
     Pandas DataFrame with the object position within each video frame
@@ -26,37 +38,62 @@ def extract_object_position_from_video(project,transform,model,device,video_fn,b
         raise ValueError("Error opening video file")
 
     video_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    #video_length = 10
-
-    print("Number of frames:",video_length)
+    print("Number of frames in {}: {}".format(video_fn,video_length))
 
 
     if video_length < 0:
         raise ValueError("Problem calculating the video length, file likely corrupted.")
 
+    if nFrames is not None:
+        if nFrames < 1:
+            raise ValueError("nFrames should be larger than 0 but was {}".format(nFrames))
+        if nFrames > video_length:
+            raise ValueError("nFrames should be smaller than the video length of {}".format(video_length))
+        video_length=nFrames
 
+    print("Processing {} frames".format(video_length))
     all_coords = np.empty((video_length,len(project.object_list)*3))
     for i in tqdm(range(video_length)):
         ret, image = cap.read()
 
         if ret == False:
             raise ValueError("Error reading video frame")
-
+            
         input = image.astype(np.float32)
-        input = transform(image=input) # normalize 
-        input = input["image"]
+        if BGR2RGBTransformation:
+            input = cv2.cvtColor(input, cv2.COLOR_BGR2RGB)
+            
+        normInput = transform(image=input)["image"] # normalize 
+        
+        if plotData:
+            fig, ax = plt.subplots(1,2,figsize=(6,3))
+            ax[0].imshow(image)
+            ax[1].imshow(normInput)
+            plt.show()
+        
+        
+        
         # transform to torch tensor, send to gpu, permute the dimensions and unsqueeze to make a batch
-        input = torch.tensor(input).to(device).permute(2,0,1).unsqueeze(0).float()
+        input = torch.tensor(normInput).to(device).permute(2,0,1).unsqueeze(0).float()
 
         # model prediction
         output = torch.sigmoid(model(input))
         # batch to image, move to cpu memory, transform to numpy array
         output = output.to("cpu").detach().numpy() 
+        
+    
+        if plotData:
+            fig, ax = plt.subplots(1,output.shape[1]+1,figsize=((output.shape[1]+1)*3,3))
+            ax[0].imshow(normInput)
+            ax[0].set_title("Image")
+            for j in range(output.shape[1]):
+                ax[j+1].imshow(output[0,j])
+                ax[j+1].set_title(project.object_list[j])
+
         coord = detector.detect(output)
-        all_coords[i] = coord.reshape(1,-1).squeeze() # one row of x,y,prob,x,y,prob,...
-
+        all_coords[i] = coord.squeeze().reshape(1,-1)
+      
     cap.release()
-
 
     df = pd.DataFrame()
     for i, ob in enumerate(project.object_list):

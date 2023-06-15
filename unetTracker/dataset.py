@@ -28,11 +28,12 @@ class UNetDataset(torch.utils.data.Dataset):
     """
     
     
-    def __init__(self, image_dir, mask_dir,coordinate_dir,transform=None):
+    def __init__(self, image_dir, mask_dir,coordinate_dir,transform=None,BGR2RGBTransformation=True):
         super(UNetDataset, self).__init__()
         self.image_dir = image_dir
         self.mask_dir = mask_dir
         self.coordinate_dir = coordinate_dir
+        self.BGR2RGBTransformation=BGR2RGBTransformation
         
         
         # if the directories do not exist, try creating them
@@ -88,7 +89,10 @@ class UNetDataset(torch.utils.data.Dataset):
         
     
         image = cv2.imread(img_path).astype(np.float32)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        
+        # 
+        if self.BGR2RGBTransformation:
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         
         mask = np.load(mask_path).astype(np.float32)
         
@@ -259,7 +263,6 @@ class UNetDataset(torch.utils.data.Dataset):
 
             if ret == False:
                 print ("error reading frame")
-
 
             filename_img = str(uuid.uuid1()) + '.jpg'
             image_path = os.path.join(frame_dir, filename_img)
