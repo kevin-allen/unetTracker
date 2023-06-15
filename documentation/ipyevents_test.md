@@ -1,5 +1,5 @@
 
-# Minimal test of the ipyevents package
+# Minimal test of the ipyevents package (not used anymore)
 
 Start jupyter lab
 
