@@ -7,8 +7,8 @@ For each image, we get a x,y coordinate for each tracked object together with a 
 There is a series Jupyter notebooks that get you through the steps required to train your neural network, assess how good it is, improve it with difficult images.  You can then use your trained network to process other video.
 
 The repository contains two main parts: 
-1. The unetTracker python package. The code is located in the unetTracker folder
-2. A series of notebooks that shows you how to train, evaluate and use your model.
+1. The unetTracker python package. The code is located in the `unetTracker` folder.
+2. A series of notebooks that shows you how to train, evaluate and use your model. The notebooks are in the `notebooks` folders.
 
 You can run the notebook using a Jupyter server. The server will need to have access to a GPU. 
 
