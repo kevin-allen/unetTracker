@@ -1,6 +1,6 @@
 # Getting started with unetTracker
 
-Once unetTracker is installed in your python environment, all you need to do is to follow a series of Jupyter notebooks located in the `notebooks` directory of the unetTracker repository. 
+Once the unetTracker python package is installed in your python environment, all you need to do is to follow a series of Jupyter notebooks located in the `notebooks` directory of the unetTracker repository. 
 
 I would recommend to create a directory for your project that will include the model, dataset and jupyter notebooks to train the model.
 
