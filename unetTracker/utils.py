@@ -105,7 +105,7 @@ def extract_object_position_from_video(project,transform,model,device,video_fn,b
 
 
 
-def label_video(project,video_fn,tracking_fn, label_fn):
+def label_video(project,video_fn,tracking_fn, label_fn,nFrames=None):
     """
     Function to label a video (add a marker at the coordinate of the detected objects)
     
@@ -113,6 +113,7 @@ def label_video(project,video_fn,tracking_fn, label_fn):
     video_fn: file name of the video to label
     tracking_fn: tracking data for the video to label (Pandas.DataFrame with x,y,p for each object)
     label_fn: name of the labelled video file that will be created
+    nFrames: number of frames to process
     """
     df = pd.read_csv(tracking_fn)
 
@@ -129,10 +130,20 @@ def label_video(project,video_fn,tracking_fn, label_fn):
 
     video_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     print("Number of frames:",video_length)
-
+    
     if video_length < 0:
         raise ValueError("Problem calculating the video length, file likely corrupted.")
 
+    if nFrames is not None:
+        if nFrames < 1:
+            raise ValueError("nFrames should be larger than 0 but was {}".format(nFrames))
+        if nFrames > video_length:
+            raise ValueError("nFrames should be smaller than the video length of {}".format(video_length))
+        video_length=nFrames    
+        
+        
+        
+        
     size=project.image_size[1],project.image_size[0]
     writer = cv2.VideoWriter(label_fn, cv2.VideoWriter_fourcc(*'MJPG'),30, size)
 
