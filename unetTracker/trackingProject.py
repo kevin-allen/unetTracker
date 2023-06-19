@@ -31,6 +31,7 @@ class TrackingProject():
         self.model_fn = os.path.join(self.models_dir,"UNet.pt")
         self.image_size = [480,640]  # height,width
         self.unet_features =[64,128,256,512] # number of filters at the different levels of the U-Net
+        self.image_extension = ".png"
         
         
         # variables for data augmentation
@@ -135,7 +136,8 @@ class TrackingProject():
                     "augmentation_RotateProb": self.augmentation_RotateProb,
                     "augmentation_RandomBrightnessContrastProb": self.augmentation_RandomBrightnessContrastProb,
                     "labeling_ImageEnlargeFactor": self.labeling_ImageEnlargeFactor,
-                    "normalization_values": self.normalization_values
+                    "normalization_values": self.normalization_values,
+                    "image_extension": self.image_extension
                    }
         
         with open(self.config_fn, 'w') as file:
@@ -160,6 +162,7 @@ class TrackingProject():
             self.augmentation_RandomBrightnessContrastProb = self.configDict["augmentation_RandomBrightnessContrastProb"]
             self.labeling_ImageEnlargeFactor = self.configDict["labeling_ImageEnlargeFactor"]
             self.normalization_values = self.configDict["normalization_values"]
+            self.image_extension = self.configDict["image_extension"]
             print(self.configDict)
             
         else:

@@ -7,7 +7,7 @@ from tqdm import tqdm
 import torch
 
 
-def extract_object_position_from_video(project,transform,model,device,video_fn,blobMinArea=30,nFrames=None,BGR2RGBTransformation=True,plotData=False):
+def extract_object_position_from_video(project,transform,model,device,video_fn,blobMinArea=30,nFrames=None,startFrameIndex=0,BGR2RGBTransformation=True,plotData=False):
     """
     Function to extract the position of objects in a video
     Arguments
@@ -43,17 +43,30 @@ def extract_object_position_from_video(project,transform,model,device,video_fn,b
 
     if video_length < 0:
         raise ValueError("Problem calculating the video length, file likely corrupted.")
-
-    if nFrames is not None:
-        if nFrames < 1:
-            raise ValueError("nFrames should be larger than 0 but was {}".format(nFrames))
-        if nFrames > video_length:
-            raise ValueError("nFrames should be smaller than the video length of {}".format(video_length))
-        video_length=nFrames
-
-    print("Processing {} frames".format(video_length))
-    all_coords = np.empty((video_length,len(project.object_list)*3))
-    for i in tqdm(range(video_length)):
+        
+    if startFrameIndex is None:
+        startFrameIndex = 0
+    
+    if startFrameIndex < 0: 
+        raise ValueError("startFrameIndex should be 0 or larger.")
+    if startFrameIndex >= video_length:
+        raise ValueError("startFrameIndex should be not be larger than the number of frame in the video ({})".format(video_length))
+        
+        
+    if nFrames is None:
+        nFrames = video_length-startFrameIndex    
+    if nFrames < 1:
+        raise ValueError("nFrames should be larger than 0 but was {}".format(nFrames))
+    if startFrameIndex + nFrames > video_length:
+        raise ValueError("startFrameIndex+nFrames should be smaller than the video length of {}".format(video_length))
+                    
+    print("Processing {} frames from index {}".format(nFrames,startFrameIndex))
+    
+    # set the correct location in the file
+    cap.set(cv2.CAP_PROP_POS_FRAMES, startFrameIndex)
+    
+    all_coords = np.empty((nFrames,len(project.object_list)*3))
+    for i in tqdm(range(nFrames)):
         ret, image = cap.read()
 
         if ret == False:

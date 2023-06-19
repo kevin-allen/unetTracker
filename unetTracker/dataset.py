@@ -21,6 +21,13 @@ class UNetDataset(torch.utils.data.Dataset):
     """
     Represent our data for image segmentation.
     
+    For each image, we also have coordinates stored in a text file and masks. 
+    The masks are used as the label for each body part. 
+    
+    To know where the images are coming from, this class saves the video and frame number of each image in a csv file.
+    This can be used to trace back where the images are coming from.
+    
+    
     Can be used to 
     1) get data
     2) save new images and masks
@@ -28,12 +35,26 @@ class UNetDataset(torch.utils.data.Dataset):
     """
     
     
-    def __init__(self, image_dir, mask_dir,coordinate_dir,transform=None,BGR2RGBTransformation=True):
+    def __init__(self, 
+                 image_dir, mask_dir,coordinate_dir,
+                 transform=None,
+                 BGR2RGBTransformation=False,
+                 image_extension=".jpg"):
+        """
+        Arguments:
+        image_dir: path to a folder where the images will be saved
+        mask_dir: path to a folder where the mask will be saved
+        coordinate_dir: path to a folder where the coordinates will be saved
+        transform: transformation pipeline for your image. This is usually a albumentations pipeline
+        BGR2RGBTransformation: whether to swap the color order when loading the images from file,
+        imageExtension: type of files to store. Can be ".jpg" or ".png".
+        """
         super(UNetDataset, self).__init__()
         self.image_dir = image_dir
         self.mask_dir = mask_dir
         self.coordinate_dir = coordinate_dir
         self.BGR2RGBTransformation=BGR2RGBTransformation
+        self.image_extension = image_extension
         
         
         # if the directories do not exist, try creating them
@@ -42,11 +63,14 @@ class UNetDataset(torch.utils.data.Dataset):
                 print("Create",direct)
                 os.makedirs(direct)
             
+        # file to keep information about the source of each image in the dataset
+        self.image_info_file = os.path.join(self.image_dir,"image_info.csv")
+        if os.path.exists(self.image_info_file) == False:
+            with open(self.image_info_file, 'w') as the_file:
+                the_file.write("imageFileName,videoFileName,frameId\n")
         
-        
-        
-        self.images = [ntpath.basename(path) for path in glob.glob(os.path.join(image_dir,'*.jpg'))]
-        self.masks = [ fn.replace(".jpg",'_mask.npy') for fn in self.images]
+        self.images = [ntpath.basename(path) for path in glob.glob(os.path.join(image_dir,f'*{self.image_extension}'))]
+        self.masks = [ fn.replace(self.image_extension,'_mask.npy') for fn in self.images]
         
         # variable to set data augmentation transformation
         self.augmentation_RandomSizedCropProb = 1.0
@@ -84,8 +108,8 @@ class UNetDataset(torch.utils.data.Dataset):
         You can set self.transform to process the item the when loaded. Use albumentation transform functions.
         """
         img_path = os.path.join(self.image_dir, self.images[index])
-        mask_path = os.path.join(self.mask_dir, self.images[index].replace(".jpg",'_mask.npy'))
-        coordinates_path = os.path.join(self.coordinate_dir, self.images[index].replace(".jpg",'_coordinates.csv'))
+        mask_path = os.path.join(self.mask_dir, self.images[index].replace(self.image_extension,'_mask.npy'))
+        coordinates_path = os.path.join(self.coordinate_dir, self.images[index].replace(self.image_extension,'_coordinates.csv'))
         
     
         image = cv2.imread(img_path).astype(np.float32)
@@ -138,32 +162,40 @@ class UNetDataset(torch.utils.data.Dataset):
         """
         img_path = os.path.join(self.image_dir, self.images[index])
         return img_path
+    def update_item_list(self):
+        """
+        update the list of images,masks and coordinates that are in the folders
+        """
+        self.images = [ntpath.basename(path) for path in glob.glob(os.path.join(self.image_dir,f'*{self.image_extension}'))]
+        self.masks = [ fn.replace(self.image_extension,'_mask.npy') for fn in self.images]
+        self.coordinates = [ fn.replace(self.image_extension,'_coordinates.csv') for fn in self.images]
+        
     
-    
-    def save_entry(self, image, mask, coordinates):
+    def save_entry(self, image, mask, coordinates,videoFileName=None,frameId=None):
         """
         
-        Saves an image in BGR8 format to dataset, as jpg
+        Saves an image in BGR8 format to dataset
         Save coordinates as csv file
         Save mask as a numpy array (npy file)
         
         """  
-        filename_img = str(uuid.uuid1()) + '.jpg'
+        filename_img = str(uuid.uuid1()) + self.image_extension
         image_path = os.path.join(self.image_dir, filename_img)
         cv2.imwrite(image_path, image)
         
-        filename = filename_img.replace(".jpg",'_mask.npy')
+        filename = filename_img.replace(self.image_extension,'_mask.npy')
         mask_path = os.path.join(self.mask_dir, filename)
         np.save(mask_path, mask)
         
-        filename = filename_img.replace(".jpg",'_coordinates.csv')
+        filename = filename_img.replace(self.image_extension,'_coordinates.csv')
         coordinates_path = os.path.join(self.coordinate_dir, filename)
-        print(coordinates)
         np.savetxt(coordinates_path, coordinates)
         
-        self.images = [ntpath.basename(path) for path in glob.glob(os.path.join(self.image_dir,'*.jpg'))]
-        self.masks = [ fn.replace(".jpg",'_mask.npy') for fn in self.images]
-        self.coordinates = [ fn.replace(".jpg",'_coordinates.csv') for fn in self.images]
+        # update dataset image source info registery
+        with open(self.image_info_file, 'a') as the_file:
+            the_file.write("{},{},{}\n".format(filename_img,videoFileName,frameId))
+        
+        self.update_item_list()
         
         return image_path,mask_path,coordinates_path
     
@@ -175,17 +207,14 @@ class UNetDataset(torch.utils.data.Dataset):
         index: index of the entry to delete
         """
         img_path = os.path.join(self.image_dir, self.images[index])
-        mask_path = os.path.join(self.mask_dir, self.images[index].replace(".jpg",'_mask.npy'))
-        coordinates_path = os.path.join(self.coordinate_dir, self.images[index].replace(".jpg",'_coordinates.csv'))
+        mask_path = os.path.join(self.mask_dir, self.images[index].replace(self.image_extension,'_mask.npy'))
+        coordinates_path = os.path.join(self.coordinate_dir, self.images[index].replace(self.image_extension,'_coordinates.csv'))
     
         for filename in [img_path, mask_path, coordinates_path]:
             os.remove(filename)
-            
-        self.images = [ntpath.basename(path) for path in glob.glob(os.path.join(self.image_dir,'*.jpg'))]
-        self.masks = [ fn.replace(".jpg",'_mask.npy') for fn in self.images]
-        self.coordinates = [ fn.replace(".jpg",'_coordinates.csv') for fn in self.images]
+          
+        self.update_item_list()
         
-    
     
     def create_mask(self,image, coordinates, radius):
         """
@@ -212,12 +241,15 @@ class UNetDataset(torch.utils.data.Dataset):
         return mask
     
     
-
-       
-        
-    def extract_frames_from_video(self,video_fn, number_frames, frame_dir,image_size):
+    def extract_frames_from_video(self,video_fn, 
+                                  number_frames, 
+                                  frame_dir,
+                                  image_size,
+                                  frame_info_file = None):
         """
         Function to extract frames from a video. The frames are chosen randomly.
+        
+        A file is added with the images that contains the name of the image file, the video file and the frame id.
         
         Arguments
         video_fn: File name of the video
@@ -232,6 +264,19 @@ class UNetDataset(torch.utils.data.Dataset):
 
         if not os.path.exists(video_fn):  
             raise IOError("Video file does not exist:",video_fn)
+            
+        if frame_info_file is None:
+            raise ValueError("Please set argument frame_info_file to store information about the source of images.")
+            
+        self.frame_info_file = frame_info_file
+        if os.path.exists(self.frame_info_file) == False:
+            fileReg = open(self.frame_info_file, "w")
+            fileReg.write("imageFileName,videoFileName,frameId\n")
+            
+        else:
+            fileReg = open(self.frame_info_file, "a") # append mode
+        
+           
             
         cap = cv2.VideoCapture(video_fn)
 
@@ -248,15 +293,16 @@ class UNetDataset(torch.utils.data.Dataset):
             raise ValueError("Expect video frame dimensions of {} but got {}h {}w".format(image_size,height,width))
         
         if length < 0:
-            print("Problem calculating the video length, file likely corrupted.")
-            print("attempting to get every 200 frames until we collected the requested number of frames")
-            steps = 200
-            sel_frames = np.arange(0,steps*number_frames,steps)
-        else:
-            sel_frames = np.random.choice(np.arange(length),size=number_frames, replace=False)
-            sel_frames.sort()
+            raise ValueError("Problem calculating the video length, file likely corrupted.")
+        
+        sel_frames = np.random.choice(np.arange(length),size=number_frames, replace=False)
+        sel_frames.sort()
 
+        
+        
         print("Extracting frames:", sel_frames, "to",frame_dir)
+        print("Saving image info to",self.frame_info_file)
+        
         for i in sel_frames:
             cap.set(cv2.CAP_PROP_POS_FRAMES,i)
             ret, frame = cap.read()
@@ -264,11 +310,21 @@ class UNetDataset(torch.utils.data.Dataset):
             if ret == False:
                 print ("error reading frame")
 
-            filename_img = str(uuid.uuid1()) + '.jpg'
+            filename_img = str(uuid.uuid1()) + self.image_extension
             image_path = os.path.join(frame_dir, filename_img)
             cv2.imwrite(image_path, frame)
+            fileReg.write("{},{},{}\n".format(filename_img,video_fn,i))
+            
 
         cap.release() 
+        fileReg.close()
+        
+        
+        
+        
+        
+        
+        
     def create_training_validation_dataset(self,
                                             train_image_dir = "data/noseDataset/train_images",
                                             train_mask_dir = "data/noseDataset/train_masks",
@@ -353,8 +409,8 @@ class UNetDataset(torch.utils.data.Dataset):
             dst = os.path.join(train_image_dir,fn)
             shutil.copyfile(src, dst)
             
-            src = os.path.join(self.coordinate_dir,fn.replace(".jpg",'_coordinates.csv'))
-            dst = os.path.join(train_coordinate_dir,fn.replace(".jpg",'_coordinates.csv'))
+            src = os.path.join(self.coordinate_dir,fn.replace(self.image_extension,'_coordinates.csv'))
+            dst = os.path.join(train_coordinate_dir,fn.replace(self.image_extension,'_coordinates.csv'))
             shutil.copyfile(src, dst)
             
             
@@ -363,8 +419,8 @@ class UNetDataset(torch.utils.data.Dataset):
             dst = os.path.join(val_image_dir,fn)
             shutil.copyfile(src, dst)
             
-            src = os.path.join(self.coordinate_dir,fn.replace(".jpg",'_coordinates.csv'))
-            dst = os.path.join(val_coordinate_dir,fn.replace(".jpg",'_coordinates.csv'))
+            src = os.path.join(self.coordinate_dir,fn.replace(self.image_extension,'_coordinates.csv'))
+            dst = os.path.join(val_coordinate_dir,fn.replace(self.image_extension,'_coordinates.csv'))
             shutil.copyfile(src, dst)
             
             

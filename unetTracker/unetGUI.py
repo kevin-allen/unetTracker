@@ -4,6 +4,7 @@ from ipywidgets import Label, HTML, HBox, Image, VBox, Box, HBox
 from unetTracker.camera import bgr8_to_jpeg
 import cv2
 import numpy as np
+import pandas as pd
 import glob
 import os
 import torch
@@ -673,11 +674,6 @@ class LabelFromVideoGUI(VBox):
         
         
         
-        
-        
-        
-        
-        
 ################################
 ####### work with images #######
 ################################
@@ -688,15 +684,27 @@ class LabelFromImagesGUI(VBox):
     """
     Class to label frames from single images.
     """
-    def __init__(self,image_dir,project,dataset,model=None):
+    def __init__(self,image_dir,
+                 frame_info_file,
+                 project,dataset,
+                 model=None):
         super().__init__()
         
         self.image_dir = image_dir
+        self.frame_info_file = frame_info_file
         self.project = project
         self.dataset = dataset
         self.model = model
         self.image_scaling_factor = self.project.labeling_ImageEnlargeFactor
-               
+        self.image_extension = project.image_extension
+        
+        
+        
+        if os.path.exists(self.frame_info_file) == False:
+            raise IOError("{} does not exist".format(self.frame_info_file))
+        self.frameInfoDf = pd.read_csv(self.frame_info_file)
+        
+  
         self.imgLabelWidget =  Image(format='jpeg',height=project.image_size[0]/2, width=project.image_size[1]/2)
         self.htmlWidget = HTML('Event info')
         
@@ -741,18 +749,24 @@ class LabelFromImagesGUI(VBox):
         
         
         
-        self.images =  glob.glob(os.path.join(image_dir,'*.jpg'))
+        self.images =  glob.glob(os.path.join(image_dir,f'*{self.image_extension}'))
         self.imageIndex = 0
         
         if len(self.images) == 0:
             raise ValueError(f"No image found in {self.image_dir}")
         
-        frame = cv2.imread(self.images[self.imageIndex])
-        print("frame.shape:",frame.shape)
-        self.imgSnapshot = bgr8_to_jpeg(frame)
-        self.ax.imshow(frame)
+        
+        self.imageFileName = self.images[self.imageIndex]
+        self.frame = cv2.imread(self.imageFileName)
+        print("frame.shape:",self.frame.shape)
+        self.imgSnapshot = bgr8_to_jpeg(self.frame)
+        self.ax.imshow(self.frame)
         #self.fig.canvas.draw()  
-        self.imgLabelWidget.value = bgr8_to_jpeg(frame)
+        self.imgLabelWidget.value = bgr8_to_jpeg(self.frame)
+        ifn = os.path.basename(self.imageFileName)
+        self.imageVideoFileName = self.frameInfoDf[self.frameInfoDf.imageFileName == ifn].videoFileName.item()
+        self.imageFrameId = self.frameInfoDf[self.frameInfoDf.imageFileName == ifn].frameId.item()
+        
         
         """
         Events handling
@@ -764,7 +778,6 @@ class LabelFromImagesGUI(VBox):
         # deal with click on the mpl canvas
         self.cid = self.fig.canvas.mpl_connect('button_press_event', self.add_coordinates_handle_event)
        
-        
         
         """
         Fill images with a default image
@@ -779,18 +792,24 @@ class LabelFromImagesGUI(VBox):
 
     def get_next_image(self):
         self.imageIndex = self.imageIndex+1
-        self.images = glob.glob(os.path.join(self.image_dir,'*.jpg'))
+        self.images = glob.glob(os.path.join(self.image_dir,f'*{self.image_extension}'))
         
         if self.imageIndex > (len(self.images)-1):
             self.imageIndex = 0
-                
-        frame = cv2.imread(self.images[self.imageIndex])
         
-        self.imgSnapshot = bgr8_to_jpeg(frame)
-        self.imgLabelWidget.value = bgr8_to_jpeg(frame)
+        self.imageFileName = self.images[self.imageIndex]
+        self.frame = cv2.imread(self.imageFileName)
+        ifn = os.path.basename(self.imageFileName)
+        self.imageVideoFileName = self.frameInfoDf[self.frameInfoDf.imageFileName == ifn].videoFileName.item()
+        self.imageFrameId = self.frameInfoDf[self.frameInfoDf.imageFileName == ifn].frameId.item()
         
         
-        self.ax.imshow(frame)
+        
+        self.imgSnapshot = bgr8_to_jpeg(self.frame)
+        self.imgLabelWidget.value = bgr8_to_jpeg(self.frame)
+        
+        
+        self.ax.imshow(self.frame)
         self.fig.canvas.draw()
         
         # set coordinate to 0,0
@@ -800,7 +819,7 @@ class LabelFromImagesGUI(VBox):
          
         self.objectRadioButtons.value=self.project.object_list[0]
         
-        lines = "image {} of {}".format(self.imageIndex,len(self.images))
+        lines = "image {} of {}, from {}, frameID: {}".format(self.imageIndex,len(self.images),self.imageVideoFileName,self.imageFrameId)
         content = "  ".join(lines)
         self.htmlWidget.value = content
       
@@ -828,12 +847,13 @@ class LabelFromImagesGUI(VBox):
                 coordinates[i,1] = self.coordBounded[i][1].value
                 
         # create the mask get mask for each object
-        frame = self.imgSnapshot
-        frame = cv2.imdecode(np.frombuffer(frame, np.uint8),-1)
-        mask = self.dataset.create_mask(frame,coordinates,self.project.target_radius)
+        #frame = self.imgSnapshot
+        #frame = cv2.imdecode(np.frombuffer(frame, np.uint8),-1)
+        mask = self.dataset.create_mask(self.frame,coordinates,self.project.target_radius)
         
         # save the data to the dataset
-        img_path, mask_path, coordinates_path = self.dataset.save_entry(frame,mask,coordinates)
+        img_path, mask_path, coordinates_path = self.dataset.save_entry(self.frame,mask,coordinates,videoFileName=self.imageVideoFileName,
+                                                                        frameId=self.imageFrameId)
 
          # set coordinate to 0,0
         for i in range(len(self.project.object_list)):
