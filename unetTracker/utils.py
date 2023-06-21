@@ -7,7 +7,9 @@ from tqdm import tqdm
 import torch
 
 
-def extract_object_position_from_video(project,transform,model,device,video_fn,blobMinArea=30,nFrames=None,startFrameIndex=0,BGR2RGBTransformation=True,plotData=False):
+def extract_object_position_from_video(project,transform,model,device,video_fn,
+                                       blobMinArea=30,nFrames=None,startFrameIndex=0,
+                                       BGR2RGBTransformation=False,plotData=False):
     """
     Function to extract the position of objects in a video
     Arguments

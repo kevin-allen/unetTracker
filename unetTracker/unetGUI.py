@@ -461,6 +461,7 @@ class LabelFromVideoGUI(VBox):
             self.image_index = 0
         self.cap.set(cv2.CAP_PROP_POS_FRAMES,self.image_index)
         ret, image = self.cap.read()
+        self.image = image
         if ret == False:
             raise ValueError("Error reading video frame")
             
@@ -541,9 +542,9 @@ class LabelFromVideoGUI(VBox):
     def capture_handle_event(self, event):
         
         frame = self.imgVideoWidget.value
-          
         self.imgSnapshot = frame
-        frame_np = cv2.imdecode(np.frombuffer(frame, np.uint8),-1)
+        
+        frame_np = self.image #cv2.imdecode(np.frombuffer(frame, np.uint8),-1)
         self.ax.imshow(frame_np)
         self.fig.canvas.draw()  
         self.imgLabelWidget.value = frame
@@ -568,6 +569,9 @@ class LabelFromVideoGUI(VBox):
         self.cap.set(cv2.CAP_PROP_POS_FRAMES,self.image_index)
         
         ret, image = self.cap.read()
+
+        # numpy array with the image, use this for model and saving to dataset
+        self.image=image.copy()
         
         if ret == False:
             raise ValueError("Error reading video frame")
@@ -663,10 +667,10 @@ class LabelFromVideoGUI(VBox):
                 coordinates[i,1] = self.coordBounded[i][1].value
        
         # create the mask get mask for each object
-        frame = self.imgSnapshot
-        frame = cv2.imdecode(np.frombuffer(frame, np.uint8),-1)
+        ##frame = self.imgSnapshot
+        ##frame = cv2.imdecode(np.frombuffer(frame, np.uint8),-1)
         mask = self.dataset.create_mask(frame,coordinates,self.project.target_radius)
-        img_path, mask_path, coordinates_path = self.dataset.save_entry(frame,mask,coordinates)
+        img_path, mask_path, coordinates_path = self.dataset.save_entry(self.image,mask,coordinates)
          
         lines = "dataset size:{}".format(len(self.dataset))
         content = "  ".join(lines)
@@ -677,9 +681,6 @@ class LabelFromVideoGUI(VBox):
 ################################
 ####### work with images #######
 ################################
-
-
-
 class LabelFromImagesGUI(VBox):
     """
     Class to label frames from single images.

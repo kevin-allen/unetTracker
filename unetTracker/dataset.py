@@ -129,8 +129,6 @@ class UNetDataset(torch.utils.data.Dataset):
             image = transformed['image']
             mask = transformed['mask']
         
-        
-        
         # to tensor and permute
         image = torch.from_numpy(image).permute(2,0,1)
         mask = torch.from_numpy(mask).permute(2,0,1)
