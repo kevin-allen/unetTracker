@@ -243,6 +243,7 @@ class UNetDataset(torch.utils.data.Dataset):
                                   number_frames, 
                                   frame_dir,
                                   image_size,
+                                  selected_frames = None,
                                   frame_info_file = None):
         """
         Function to extract frames from a video. The frames are chosen randomly.
@@ -254,6 +255,7 @@ class UNetDataset(torch.utils.data.Dataset):
         number_frames: Number of frames to extract
         frame_directory: Directory in which to save the images
         image_size: Expected image size, list or tuple of 2 numbers (height,width)
+        selected_frames: list of frames to extract, if not specified a random selection is used
         """
 
         if not os.path.exists(frame_dir):
@@ -293,15 +295,18 @@ class UNetDataset(torch.utils.data.Dataset):
         if length < 0:
             raise ValueError("Problem calculating the video length, file likely corrupted.")
         
-        sel_frames = np.random.choice(np.arange(length),size=number_frames, replace=False)
-        sel_frames.sort()
+        # if user did not provide frames, take a random sample.
+        if selected_frames is None:
+            selected_frames = np.random.choice(np.arange(length),size=number_frames, replace=False)
+        
+        
+        selected_frames.sort()
 
         
-        
-        print("Extracting frames:", sel_frames, "to",frame_dir)
+        print("Extracting frames:", selected_frames, "to",frame_dir)
         print("Saving image info to",self.frame_info_file)
         
-        for i in sel_frames:
+        for i in selected_frames:
             cap.set(cv2.CAP_PROP_POS_FRAMES,i)
             ret, frame = cap.read()
 

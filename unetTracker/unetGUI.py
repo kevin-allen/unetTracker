@@ -11,6 +11,7 @@ import torch
 import ntpath
 import albumentations as A
 import matplotlib.pyplot as plt
+from datetime import datetime
 
 """
 This is the code for the unetTracker GUI
@@ -397,8 +398,7 @@ class LabelFromVideoGUI(VBox):
         self.saveButton = widgets.Button(description='Save labelled frame',
                             disabled=False,
                             button_style='', # 'success', 'info', 'warning', 'danger' or ''
-                            tooltip='Click me',
-                            icon='check') # (FontAwesome names without the `fa-` prefix)
+                            tooltip='Click me') # (FontAwesome names without the `fa-` prefix)
         
         self.slider = widgets.IntSlider(value=0,min=0, max=10, step=1, description='Scroll:', disabled=False, continuous_update=False, orientation='horizontal', readout=True, readout_format='d')
         self.slider.observe(self.slider_handle_event, names='value')
@@ -478,7 +478,7 @@ class LabelFromVideoGUI(VBox):
                       self.htmlWidget,
                       self.coordinatesBox, 
                       self.fig.canvas,
-                      HBox([self.imgLabelWidget,self.saveButton])]
+                      HBox([self.imgLabelWidget,self.saveButton]),debug_view]
                       
             
     
@@ -538,14 +538,14 @@ class LabelFromVideoGUI(VBox):
             self.playTimer.cancel()
             self.timerRunning=False
             
- 
+    @debug_view.capture(clear_output=True) 
     def capture_handle_event(self, event):
         
         frame = self.imgVideoWidget.value
         self.imgSnapshot = frame
         
-        frame_np = self.image #cv2.imdecode(np.frombuffer(frame, np.uint8),-1)
-        self.ax.imshow(frame_np)
+        self.captured_image = self.image.copy() #cv2.imdecode(np.frombuffer(frame, np.uint8),-1)
+        self.ax.imshow(self.captured_image)
         self.fig.canvas.draw()  
         self.imgLabelWidget.value = frame
 
@@ -556,7 +556,8 @@ class LabelFromVideoGUI(VBox):
         
         self.objectRadioButtons.value=self.project.object_list[0]
         
-        lines = "dataset size:{},{}".format(len(self.dataset),datetime.now())
+        
+        lines = "Capture: dataset size:{},{}".format(len(self.dataset),datetime.now())
         content = "  ".join(lines)
         self.htmlWidget.value = content
 
@@ -651,11 +652,12 @@ class LabelFromVideoGUI(VBox):
         return image, output
         
     
-   
+    @debug_view.capture(clear_output=True) 
     def save_handle_event(self,event):
         # get coordinates for each object
         # arrays with 2 columns for x and y
        
+        self.htmlWidget.value = "Capture: reading coordinates"
         coordinates = np.empty((len(self.project.object_list),2))
       
         for i in range(len(self.project.object_list)):
@@ -669,14 +671,213 @@ class LabelFromVideoGUI(VBox):
         # create the mask get mask for each object
         ##frame = self.imgSnapshot
         ##frame = cv2.imdecode(np.frombuffer(frame, np.uint8),-1)
-        mask = self.dataset.create_mask(frame,coordinates,self.project.target_radius)
-        img_path, mask_path, coordinates_path = self.dataset.save_entry(self.image,mask,coordinates)
+        
+        self.htmlWidget.value = "Capture: create mask"
+        mask = self.dataset.create_mask(self.captured_image,coordinates,self.project.target_radius)
+        self.htmlWidget.value = "Capture: save entry"
+        img_path, mask_path, coordinates_path = self.dataset.save_entry(self.captured_image,mask,coordinates)
          
         lines = "dataset size:{}".format(len(self.dataset))
         content = "  ".join(lines)
         self.htmlWidget.value = content
+      
+    
+    
+    
+class SelectImagesFromLabeledVideoGUI(VBox):
+    """
+    Class to select frames from a labeled video
+    This just saves a list of frame ID into self.frame_list
+    
+    
+    """
+    def __init__(self, video_fn, project):
+
+        super().__init__()
         
         
+        self.video_fn = video_fn
+        self.project = project
+        
+        ## a list to save the id of selected frame
+        self.frame_list = []
+        
+        if not os.path.exists(self.video_fn):
+            raise IOError("{} does not exists".format(self.video_fn))
+        
+        self.image_scaling_factor =  self.project.labeling_ImageEnlargeFactor
+        self.imgVideoWidget = Image(format='jpeg',height=project.image_size[0], width=project.image_size[1]) # image from video 
+                
+        # to debug and display information
+        self.htmlWidget = HTML('Event info')
+        
+        
+        self.previousButton = widgets.Button(description='Previous frame',
+                            disabled=False,
+                            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                            tooltip='Click me') # (FontAwesome names without the `fa-` prefix)
+        
+        self.nextButton = widgets.Button(description='Next frame',
+                            disabled=False,
+                            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                            tooltip='Click me') # (FontAwesome names without the `fa-` prefix)
+        
+        self.addButton = widgets.Button(description ="Add a frame to list",
+                            disabled=False,
+                            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                            tooltip='Click me')
+        
+        self.slider = widgets.IntSlider(value=0,min=0, max=10, step=1, description='Scroll:', disabled=False, continuous_update=False, orientation='horizontal', readout=True, readout_format='d')
+        self.slider.observe(self.slider_handle_event, names='value')
+        
+        self.timerRunning = False
+        self.timerWait=0.02
+        
+        self.playStopButtons = widgets.ToggleButtons(
+                            options={'Play':0, 'Stop':1},
+                            description='Video player:',
+                            disabled=False,
+                            value = 1,
+                            button_style='', # 'success', 'info', 'warning', 'danger' or ''
+                            tooltips=['Show live images' 'Stop live images'])
+        
+        """
+        Events handling
+        """
+        
+        self.nextButton.on_click(self.next_handle_event)
+        self.previousButton.on_click(self.previous_handle_event)
+        self.playStopButtons.observe(self.play_stop_handle_event)
+        self.addButton.on_click(self.add_handle_event)
+        
+        """
+        Get the first image from the video
+        """
+    
+        self.htmlWidget.value = "Getting image from video"
+        if not os.path.exists(self.video_fn):  
+            raise IOError("Video file does not exist:",self.video_fn)
+            
+        self.cap = cv2.VideoCapture(self.video_fn)
+
+        if (self.cap.isOpened()== False): 
+            raise ValueError("Error opening video file")
+
+        self.video_length = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.image_index = 0
+        if self.video_length < 0:
+            raise IOError("Problem calculating the video length, file likely corrupted.")
+        
+        self.slider.max=self.video_length
+        self.htmlWidget.value = "Calling update_image()"
+        self.update_image()
+        
+            
+        self.children = [
+                      HBox([self.imgVideoWidget,
+                            VBox([self.playStopButtons,
+                                  self.previousButton,
+                                  self.nextButton,
+                                  self.slider,
+                                  self.addButton])]),
+                      self.htmlWidget] #,debug_view]
+        
+                      
+    #@debug_view.capture(clear_output=True) 
+    def play_stop_handle_event(self,event):
+        
+        
+        line = "play_stop_handle {}".format(datetime.now())
+        self.htmlWidget.value = line
+        
+        if self.timerRunning == False:
+            line = "Start timer {}".format(datetime.now())
+            self.htmlWidget.value = line
+            self.playTimer = RepeatTimer(self.timerWait, self.on_play_timer)
+            self.timerRunning = True
+           
+            self.playTimer.start()
+            self.timerRunning = True
+        else:
+            line = "Stop timer {}".format(datetime.now())
+            self.htmlWidget.value = line
+            self.playTimer.cancel()
+            self.timerRunning=False
+        
+        
+    
+    #@debug_view.capture(clear_output=True) 
+    def update_image(self):
+        
+        line = "updating image:{}".format(datetime.now())
+        self.htmlWidget.value = line
+        
+        if self.image_index > self.video_length:
+            self.image_index = 0
+        
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES,self.image_index)
+        
+        ret, image = self.cap.read()
+
+        if ret == False:
+            raise ValueError("Error reading video frame")
+        
+        self.imgVideoWidget.value = bgr8_to_jpeg(image)  
+             
+        
+  
+    #@debug_view.capture(clear_output=True) 
+    def add_handle_event(self, event):
+        
+        self.frame_list.append(self.image_index)
+        
+        lines = "frame_list contains {} frames, {}".format(len(self.frame_list),datetime.now())
+        content = "  ".join(lines)
+        self.htmlWidget.value = content
+
+       
+        
+    """
+    Callback function to handle user inputs
+    """
+    #@debug_view.capture(clear_output=True) 
+    def next_handle_event(self, event):
+        lines = "next"
+        content = "  ".join(lines)
+        self.htmlWidget.value = content
+        
+        if (self.image_index+1) < self.video_length:
+            self.image_index+=1
+        self.slider.value=self.image_index
+        self.update_image()
+        
+    #@debug_view.capture(clear_output=True) 
+    def on_play_timer(self):
+        if (self.image_index+1) < self.video_length:
+            self.image_index+=1
+        else:
+            self.image_index = 0
+        self.slider.value=self.image_index
+
+    #@debug_view.capture(clear_output=True) 
+    def previous_handle_event(self, event):
+        lines = "previous"
+        content = "  ".join(lines)
+        self.htmlWidget.value = content
+        
+        if (self.image_index-1) >= 0:
+            self.image_index-=1
+        self.slider.value=self.image_index
+        self.update_image()
+    #@debug_view.capture(clear_output=True) 
+    def slider_handle_event(self,change):
+        self.image_index=change["new"]
+        self.update_image()
+   
+    
+    
+        
+                
         
 ################################
 ####### work with images #######
