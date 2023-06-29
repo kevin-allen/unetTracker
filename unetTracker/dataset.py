@@ -39,7 +39,7 @@ class UNetDataset(torch.utils.data.Dataset):
                  image_dir, mask_dir,coordinate_dir,
                  transform=None,
                  BGR2RGBTransformation=False,
-                 image_extension=".jpg"):
+                 image_extension=".png"):
         """
         Arguments:
         image_dir: path to a folder where the images will be saved
@@ -240,9 +240,9 @@ class UNetDataset(torch.utils.data.Dataset):
     
     
     def extract_frames_from_video(self,video_fn, 
-                                  number_frames, 
                                   frame_dir,
                                   image_size,
+                                  number_frames = 30, 
                                   selected_frames = None,
                                   frame_info_file = None):
         """
@@ -252,10 +252,11 @@ class UNetDataset(torch.utils.data.Dataset):
         
         Arguments
         video_fn: File name of the video
-        number_frames: Number of frames to extract
         frame_directory: Directory in which to save the images
         image_size: Expected image size, list or tuple of 2 numbers (height,width)
+        number_frames: Number of frames to extract
         selected_frames: list of frames to extract, if not specified a random selection is used
+        frame_info_file: file in which to save information about the provenence of each image.
         """
 
         if not os.path.exists(frame_dir):

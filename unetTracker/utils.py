@@ -144,6 +144,8 @@ def label_video(project,video_fn,tracking_fn, label_fn,nFrames=None):
         raise ValueError("Error opening video file")
 
     video_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    sampling_rate = int(cap.get(cv2.CAP_PROP_FPS))
+    
     print("Number of frames:",video_length)
     
     if video_length < 0:
@@ -160,7 +162,7 @@ def label_video(project,video_fn,tracking_fn, label_fn,nFrames=None):
         
         
     size=project.image_size[1],project.image_size[0]
-    writer = cv2.VideoWriter(label_fn, cv2.VideoWriter_fourcc(*'MJPG'),30, size)
+    writer = cv2.VideoWriter(label_fn, cv2.VideoWriter_fourcc(*'MJPG'),sampling_rate, size)
 
     d = df.to_numpy() # to facilitate indexing with numbers
 
