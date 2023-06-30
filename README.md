@@ -4,7 +4,7 @@ This repository contains code to train a U-Net to track objects or body parts in
 
 For each image, we get a x,y coordinate for each tracked object together with a probability that the object is in the image.
 
-Here is an animation to give you a sense of what unetTracker does.
+Here is an animation to give you a sense of what unetTracker does. The unetTracker model had been trained with 120 labeled images from a video.
 
 ![Example](documentation/images/tracking_animation.gif)
 
