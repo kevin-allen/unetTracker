@@ -1,2 +1,3 @@
 ffmpeg -i human_hand_label.avi -ss 00:00:03 -t 00:00:13 -async 1 human_hand_label_short.mp4
-ffmpeg -i human_hand_label_short.mp4  -vf "fps=10,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse"           tracking_animation.gif
+
+ffmpeg -i human_hand_label_short.mp4  -vf "fps=20,scale=240:-1,  split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse"           tracking_animation.gif
