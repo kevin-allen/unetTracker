@@ -4,6 +4,11 @@ Code to train a U-Net to track objects in images, videos, or camera feeds.
 
 For each image, we get a x,y coordinate for each tracked object together with a probability that the object is in the image.
 
+Here is an animation to give you a sense of what unetTracker does.
+
+![Example](documentation/images/tracking_animation.gif)
+
+
 There is a series Jupyter notebooks that get you through the steps required to train your neural network, assess how good it is, improve it with difficult images.  You can then use your trained network to process other video.
 
 The repository contains two main parts: 
@@ -24,6 +29,6 @@ We have develop this code on computers running Ubuntu 20.04.
 * [Getting started](documentation/getting_started.md)
 
 
-![Example](documentation/images/tracking_animation.gif)
+
 
 
