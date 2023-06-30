@@ -1,6 +1,6 @@
 # unetTracker
 
-Code to train a U-Net to track objects in images, videos, or camera feeds. 
+This repository contains code to train a U-Net to track objects or body parts in images, videos, or camera feeds. 
 
 For each image, we get a x,y coordinate for each tracked object together with a probability that the object is in the image.
 
