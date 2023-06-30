@@ -9,7 +9,7 @@ Here is an animation to give you a sense of what unetTracker does. The unetTrack
 ![Example](documentation/images/tracking_animation.gif)
 
 
-There is a series Jupyter notebooks that get you through the steps required to train your neural network, assess how good it is, improve it with difficult images.  You can then use your trained network to process other video.
+There is a series Jupyter notebooks that get you through the steps required to create your dataset of labeled images, train your neural network, assess how good it is, improve it with difficult images.  You can then use your trained network to process other video.
 
 The repository contains two main parts: 
 1. The unetTracker python package. The code is located in the `unetTracker` folder.
