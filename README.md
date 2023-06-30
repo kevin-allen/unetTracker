@@ -23,4 +23,4 @@ We have develop this code on computers running Ubuntu 20.04.
 * [Google colab](documentation/colab.md)
 * [Getting started](documentation/getting_started.md)
 
-<img src="documentation/images/u-net-architecture.png" width="1000"/>
+<img src="documentation/images/tracking_animation.gif" width="1000"/>
