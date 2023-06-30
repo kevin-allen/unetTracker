@@ -10,9 +10,9 @@ The repository contains two main parts:
 1. The unetTracker python package. The code is located in the `unetTracker` folder.
 2. A series of notebooks that shows you how to train, evaluate and use your model. The notebooks are in the `notebooks` folders.
 
-You can run the notebook using a Jupyter server. The server will need to have access to a GPU. 
+You can run the notebook using a Jupyter server. You will need access to a GPU for some steps. If you don't have access to a GPU on your local computer, you can [use Google Colab](documentation/colab.md) for the steps requiring hardware acceleration. 
 
-You can train your model using a live webcam as input or using saved video files. 
+If you have a local GPU, you can perform live tracking using a webcam. But I recommend to start with videos instead of webcam. 
 
 Under the hood, the project uses PyTorch as a deep learning framework.
 
