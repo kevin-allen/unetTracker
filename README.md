@@ -23,4 +23,7 @@ We have develop this code on computers running Ubuntu 20.04.
 * [Google colab](documentation/colab.md)
 * [Getting started](documentation/getting_started.md)
 
-<img src="documentation/images/tracking_animation.gif"/>
+
+![Example](documentation/images/tracking_animation.gif)
+
+
