@@ -965,7 +965,9 @@ class LabelFromImagesGUI(VBox):
         self.ax.imshow(self.frame)
         #self.fig.canvas.draw()  
         self.imgLabelWidget.value = bgr8_to_jpeg(self.frame)
+        
         ifn = os.path.basename(self.imageFileName)
+        print(ifn)
         self.imageVideoFileName = self.frameInfoDf[self.frameInfoDf.imageFileName == ifn].videoFileName.item()
         self.imageFrameId = self.frameInfoDf[self.frameInfoDf.imageFileName == ifn].frameId.item()
         
