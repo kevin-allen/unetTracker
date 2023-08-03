@@ -24,6 +24,13 @@ python3 -m venv torch
 source torch/bin/activate
 ```
 
+If this stalls, check that your proxy is set properly. For instance at the DKFZ, you would use this code.
+
+```
+echo $https_proxy
+export https_proxy=www-int2.inet.dkfz-heidelberg.de:80
+```
+
 Make sure your `torch` environment is activated for all the remaining installation steps.
 
 To activate the `torch` environment...
