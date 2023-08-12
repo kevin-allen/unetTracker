@@ -7,6 +7,66 @@ from tqdm import tqdm
 import torch
 
 
+def check_accuracy(model,loader,device):
+    """
+    Function to test the performance of a unet tracker model
+    
+    It iterates through the data in the data loader, make predictions and compare the masks to the predictions made by the model
+    
+    """
+    cDetector = CoordinatesFromSegmentationMask()
+    
+    num_correct = 0
+    num_positive = 0
+    num_pixels = 0
+    num_positive_pixels_masks = 0
+    
+    dice_score = 0
+    num_mask = 0
+    num_mask_detected = 0
+    num_detected = 0
+    sum_distance = 0
+
+    model.eval()
+    with torch.no_grad():
+        for x,y,c in loader:
+            x = x.to(device)
+            y = y.to(device)
+            output = torch.sigmoid(model(x))
+            preds = (output > 0.5).float()
+            num_positive += preds.sum()
+            num_positive_pixels_masks += y.sum()
+            num_correct += (preds == y).sum()
+            num_pixels += torch.numel(preds)
+            dice_score += (2*(preds * y).sum() / ((preds+y).sum() + 1e-8)) # work only for binary
+
+            # proportion of the mask detected
+            num_mask += y.sum()
+            num_mask_detected += preds[y==1.0].sum()
+            num_detected += preds.sum()
+
+            # distance between predicted coordinates and labelled coordinates
+            output = output.detach().cpu().numpy()
+            pred_coords = cDetector.detect(output)
+
+            sum_distance+= np.nanmean(np.sqrt(((pred_coords[:,:,0:2] - c.numpy())**2).sum(axis=2))) # calculate the distance between predicted coordinates and the coordinates from the dataset.
+            # we acutally do a mean of the error for the different objects in a batch
+
+    print(f"Number of positive pixels predicted: {num_positive}")
+    print(f"Number of positive pixels in masks: {num_positive_pixels_masks}")
+    print(f"Percentage of positive pixels predicted: {(num_positive/num_pixels)*100:.3f}")
+    print(f"Percentage of positive pixels in masks: {(num_positive_pixels_masks/num_pixels)*100:.3f}")
+    
+    print(f"Accuracy: {num_correct/num_pixels*100:.3f}")
+    print(f"Dice score: {dice_score/len(loader):.3f}")
+    print(f"Mask pixels detected (True positives): {num_mask_detected/num_mask*100:.3f}%")
+    print(f"False positives: {(num_detected-num_mask_detected)/num_detected*100:.3f}%")
+    print(f"Mean distance: {sum_distance/len(loader)}")
+    a = model.train()
+
+
+
+
 def extract_object_position_from_video(project,transform,model,device,video_fn,
                                        blobMinArea=30,nFrames=None,startFrameIndex=0,
                                        BGR2RGBTransformation=False,plotData=False):
