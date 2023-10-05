@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 import torch
+import matplotlib.pyplot as plt
 
 
 def check_accuracy(model,loader,device):
@@ -69,7 +70,8 @@ def check_accuracy(model,loader,device):
 
 def extract_object_position_from_video(project,transform,model,device,video_fn,
                                        blobMinArea=30,nFrames=None,startFrameIndex=0,
-                                       BGR2RGBTransformation=False,plotData=False):
+                                       BGR2RGBTransformation=False,plotData=True,
+                                      mask=None):
     """
     Function to extract the position of objects in a video
     Arguments
@@ -82,6 +84,7 @@ def extract_object_position_from_video(project,transform,model,device,video_fn,
     nFrames: number of frames to process. Will start at frame 0 and go up to nFrame. If not given the whole file is processed
     BGR2RGBTransformation: whether to apply a BGR to RGB transformation. This should be the same as when you load images in your dataset class
     plotData: plot the images used as model input and the output of the model. Only use this for debugging as it will be slow.
+    mask: numpy array containing a mask. The array should have the save width and height as the video image
     
     
     Return
@@ -134,11 +137,19 @@ def extract_object_position_from_video(project,transform,model,device,video_fn,
         if ret == False:
             raise ValueError("Error reading video frame")
             
+            
         input = image.astype(np.float32)
         if BGR2RGBTransformation:
             input = cv2.cvtColor(input, cv2.COLOR_BGR2RGB)
             
         normInput = transform(image=input)["image"] # normalize 
+        
+        if mask is not None:
+            if mask.shape[0] != image.shape[0] or mask.shape[1] != image.shape[1]:
+                raise ValueError("mask shape is not the same as image shape")
+                
+            normInput = cv2.bitwise_or(normInput,normInput,mask = mask)
+            
         
         if plotData:
             fig, ax = plt.subplots(1,2,figsize=(6,3))
@@ -150,7 +161,6 @@ def extract_object_position_from_video(project,transform,model,device,video_fn,
         
         # transform to torch tensor, send to gpu, permute the dimensions and unsqueeze to make a batch
         input = torch.tensor(normInput).to(device).permute(2,0,1).unsqueeze(0).float()
-
         # model prediction
         output = torch.sigmoid(model(input))
         # batch to image, move to cpu memory, transform to numpy array

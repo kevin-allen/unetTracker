@@ -15,7 +15,7 @@ class TrackingProject():
     
     """
     
-    def __init__(self, name, root_folder, object_list=None, target_radius=None, transform=None):
+    def __init__(self, name, root_folder, object_list=None, target_radius=None, transform=None, image_size=None, unet_features=None):
         
         self.name = name
         self.project_dir = os.path.join(root_folder,self.name)
@@ -29,8 +29,18 @@ class TrackingProject():
         
         self.config_fn = os.path.join(self.project_dir,"config.yalm")
         self.model_fn = os.path.join(self.models_dir,"UNet.pt")
-        self.image_size = [480,640]  # height,width
-        self.unet_features =[64,128,256,512] # number of filters at the different levels of the U-Net
+        
+        
+        if image_size is None:
+            self.image_size = [480,640]  # height,width
+        else :
+            self.image_size = image_size
+            
+        if unet_features is None:
+            self.unet_features =[64,128,256,512] # number of filters at the different levels of the U-Net
+        else:
+            self.unet_features = unet_features
+            
         self.image_extension = ".png"
         
         
@@ -47,18 +57,27 @@ class TrackingProject():
         # for labeling object, so that it is easier to be presice with the mouse click
         self.labeling_ImageEnlargeFactor = 2.0
         
+        if target_radius is None:
+            self.target_radius=6
+        else:
+            self.target_radius=target_radius
+        
+        if object_list is None:
+            self.object_list = ["body_part1", "body_part2"]
+        else:
+            self.object_list = object_list
+        self.set_object_colors()
+                
         
         if object_list is None: # assumes we are supposed to get the details from a config file.
+            print("Getting configuration from config file. Values from config file will be used.")
             self.load_configuration()
         else: # assumes the user is setting up a new project
-            
             if os.path.exists(self.project_dir):
                 warnings.warn("The directory {} already exist.\n If you run save_configuration() you will overwrite the previous configuration.".format(self.project_dir))
               
             
-            self.object_list = object_list
-            self.set_object_colors()
-            self.target_radius=target_radius
+            
     
     def set_object_colors(self):
         rgb_colors = {}

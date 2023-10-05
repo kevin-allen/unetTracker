@@ -154,6 +154,17 @@ class UNetDataset(torch.utils.data.Dataset):
         return means,stds
     
     
+    def get_image_mask_coord_file_names(self,index):
+        """
+        Get the file name of the image, mask and coordinate files
+        
+        """
+        img_path = os.path.join(self.image_dir, self.images[index])
+        mask_path = os.path.join(self.mask_dir, self.images[index].replace(self.image_extension,'_mask.npy'))
+        coordinates_path = os.path.join(self.coordinate_dir, self.images[index].replace(self.image_extension,'_coordinates.csv'))
+        return img_path, mask_path, coordinates_path
+    
+    
     def get_image_file_name(self,index):
         """
         Get the file name for an image
@@ -244,7 +255,8 @@ class UNetDataset(torch.utils.data.Dataset):
                                   image_size,
                                   number_frames = 30, 
                                   selected_frames = None,
-                                  frame_info_file = None):
+                                  frame_info_file = None,
+                                  image_mask = None):
         """
         Function to extract frames from a video. The frames are chosen randomly.
         
@@ -257,6 +269,7 @@ class UNetDataset(torch.utils.data.Dataset):
         number_frames: Number of frames to extract
         selected_frames: list of frames to extract, if not specified a random selection is used
         frame_info_file: file in which to save information about the provenence of each image.
+        image_mask: mask to black out pixels from the image. image_mask should be a 2D numpy array with dtype of np.uint8. Each pixel is either 0 or 255. Pixels at 255 are kept, 0 blacked out. This allows you to black out some area of the frames. 
         """
 
         if not os.path.exists(frame_dir):
@@ -288,6 +301,11 @@ class UNetDataset(torch.utils.data.Dataset):
         width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) 
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         
+        
+        if image_mask is not None:
+            if image_mask.shape != (height,width):
+                raise ValueError("The shape of image_mask is "+image_mask.shape, "but should be {}{}".format(height,width))
+        
         print(f"video length: {length}, image size: {height}h {width}w")
         
         if image_size[0] != height or image_size[1] != width:
@@ -314,6 +332,10 @@ class UNetDataset(torch.utils.data.Dataset):
             if ret == False:
                 print ("error reading frame")
 
+            if image_mask is not None:
+                frame = cv2.bitwise_or(frame,frame,mask = image_mask)
+                
+                
             filename_img = str(uuid.uuid1()) + self.image_extension
             image_path = os.path.join(frame_dir, filename_img)
             cv2.imwrite(image_path, frame)
@@ -322,11 +344,6 @@ class UNetDataset(torch.utils.data.Dataset):
 
         cap.release() 
         fileReg.close()
-        
-        
-        
-        
-        
         
         
     def create_training_validation_dataset(self,
