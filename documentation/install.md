@@ -54,6 +54,32 @@ cd unetTracker
 pip3 install -r requirements.txt 
 python3 -m pip install -e .
 ```
+
+### Testing your installation
+
+You should now be able to import unet-tracker and torch from Python.
+
+In a terminal, get a python terminal
+```
+ipython
+```
+
+Within python...
+
+```
+import torch
+import unetTracker
+```
+
+Check if a Cuda device (GPU) is available.
+
+```
+torch.cuda.is_available()
+```
+
+If you have a Cuda-supported GPU installed correctly, this should return True.
+
+
 ### PyTorch for Jetson
 
 If you are using a Nvidia Jetson instead of a Linux PC, you probably want to install Pytorch as indicated on the [Nvidia website](https://forums.developer.nvidia.com/t/pytorch-for-jetson/72048)
