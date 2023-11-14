@@ -100,6 +100,13 @@ If you are working on a desktop machine, just run this command to start the jupy
 jupyter lab
 ```
 
+If you run the following line, you should see that ipywidgets is in the list of selected packages.
+
+```
+jupyter --version
+```
+
+
 
 ### Run jupyter lab on a remote server
 
