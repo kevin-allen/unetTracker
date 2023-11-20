@@ -56,10 +56,12 @@ class LabelFromCameraGUI(VBox):
         
         
         # image normalization
-        means = project.normalization_values["means"]
-        stds = project.normalization_values["stds"]
-        
-        self.transform = A.Compose([A.Normalize(mean=means, std=stds)])
+        if project.normalization_values is not None: 
+            means = project.normalization_values["means"]
+            stds = project.normalization_values["stds"]
+            self.transform = A.Compose([A.Normalize(mean=means, std=stds)])
+        else:
+            self.transform = A.Compose([])
         
         
         self.currentFrame = None
