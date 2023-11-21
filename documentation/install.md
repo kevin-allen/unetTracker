@@ -60,7 +60,7 @@ conda install -c conda-forge albumentations
 cd repo/unetTracker
 python -m pip install -e .
 ```
-
+https://drive.google.com/file/d/1PT66JhMFxMxS90nMWFE9JkDnvkfJgSK9/view?usp=sharing
 
 
 # Installation on Ubuntu
