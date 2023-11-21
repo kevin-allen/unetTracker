@@ -9,7 +9,7 @@ Here is an animation to give you a sense of what unetTracker does. The unetTrack
 ![Example](documentation/images/tracking_animation.gif)
 
 
-There is a series of Jupyter notebooks that get you through the steps required to create your dataset of labeled images, train your neural network, assess how good it is, and improve it with problematic images.  
+A series of Jupyter notebooks get you through the steps required to create your dataset of labeled images, train your neural network, assess how good it is, and improve it with problematic images.  
 
 Once you have a model that performs as well as needed, you can use your trained model to process other videos.
 
