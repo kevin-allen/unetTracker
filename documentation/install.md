@@ -1,4 +1,4 @@
-## Installation
+## Installation on Ubuntu
 
 
 ### NVIDIA GPU and drivers
