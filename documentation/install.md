@@ -1,4 +1,69 @@
-## Installation on Ubuntu
+# Windows installation
+
+### Install Anaconda
+
+1. Download the Anaconda installation file from https://docs.anaconda.com/free/anaconda/install/windows/
+2. Double-click on the downloaded file to install Anaconda. Use the default settings and note the installation directory
+
+### Create a conda environment in which you will use unetTracker
+
+1. Open Anaconda.Navigator
+2. Click on Environments
+3. Click create
+4. Enter the name "torch" to create an environment named torch. Select python 3.11.5
+
+### Install torch
+
+1. Open Anaconda powershell prompt
+2. `conda activate torch`
+3. `conda install pytorch torchvision torchaudio cpuonly -c pytorch`
+
+### Test torch installation
+1. Open Anaconda powershell prompt
+2. `conda activate torch`
+3. `python`
+4. In the python interpreter, run `import torch`
+
+### Install jupyter lab in your torch environment
+1. Open Anaconda powershell prompt
+2. `conda activate torch`
+3. `conda install -c conda-forge jupyterlab`
+4. Close and restart Anaconda powershell prompt and activate the torch environment
+5. `jupyter lab`
+6. 
+
+### Install git for windows
+
+1. Download the installer
+2. Double-click on the installer
+3. Choose the default installation.
+
+### Get unetTracker repository
+
+1. Open a git terminal
+2. Create a repo directory
+3. cd repo
+4. git clone https://github.com/kevin-allen/unetTracker.git
+
+
+### Instan unetTracker
+
+1. Start Anaconda powershell prompt and activate your torch environment
+2. Install requirements
+```
+conda install ipywidgets, ipympl, matplotlib, pandas, tqdm, imgaug
+conda install -c conda-forge albumentations
+```
+
+3. Install unetTracker
+```
+cd repo/unetTracker
+python -m pip install -e .
+```
+
+
+
+# Installation on Ubuntu
 
 
 ### NVIDIA GPU and drivers
