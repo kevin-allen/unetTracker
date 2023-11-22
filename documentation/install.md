@@ -1,44 +1,44 @@
 # Windows installation
 
-### Install Anaconda
+## Install Anaconda
 
 1. Download the Anaconda installation file from https://docs.anaconda.com/free/anaconda/install/windows/
 2. Double-click on the downloaded file to install Anaconda. Use the default settings and note the installation directory
 
-### Create a conda environment in which you will use unetTracker
+## Create a conda environment in which you will use unetTracker
 
 1. Open Anaconda.Navigator
-2. Click on Environments
-3. Click create
+2. Click on `Environments`
+3. Click `create`
 4. Enter the name "torch" to create an environment named torch. Select python 3.11.5
 
-### Install torch
+## Install torch
 
-1. Open Anaconda powershell prompt
+1. Open the Anaconda PowerShell prompt
 2. `conda activate torch`
 3. `conda install pytorch torchvision torchaudio cpuonly -c pytorch`
 
-### Test torch installation
-1. Open Anaconda powershell prompt
+## Test torch installation
+1. Open the Anaconda PowerShell prompt
 2. `conda activate torch`
 3. `python`
-4. In the python interpreter, run `import torch`
+4. In the Python interpreter, run `import torch`
 
-### Install jupyter lab in your torch environment
-1. Open Anaconda powershell prompt
+## Install jupyter lab in your torch environment
+1. Open the Anaconda PowerShell prompt
 2. `conda activate torch`
 3. `conda install -c conda-forge jupyterlab`
-4. Close and restart Anaconda powershell prompt and activate the torch environment
+4. Close and restart the Anaconda PowerShell prompt and activate the torch environment
 5. `jupyter lab`
 6. 
 
-### Install git for windows
+## Install git for Windows
 
 1. Download the installer
 2. Double-click on the installer
 3. Choose the default installation.
 
-### Get unetTracker repository
+## Get unetTracker repository
 
 1. Open a git terminal
 2. Create a repo directory
@@ -46,9 +46,9 @@
 4. git clone https://github.com/kevin-allen/unetTracker.git
 
 
-### Instan unetTracker
+## Instan unetTracker
 
-1. Start Anaconda powershell prompt and activate your torch environment
+1. Start the Anaconda PowerShell prompt and activate your torch environment
 2. Install requirements
 ```
 conda install ipywidgets, ipympl, matplotlib, pandas, tqdm, imgaug
@@ -66,13 +66,13 @@ https://drive.google.com/file/d/1PT66JhMFxMxS90nMWFE9JkDnvkfJgSK9/view?usp=shari
 # Installation on Ubuntu
 
 
-### NVIDIA GPU and drivers
+## NVIDIA GPU and drivers
 
 If you have a Nivida GPU, you will need to install the drivers for it and install the CUDA library.
 
 To do this, you can get instructions from [NVIDIA](https://docs.nvidia.com/datacenter/tesla/tesla-installation-notes/index.html).
 
-### Create your virtual environment
+## Create your virtual environment
 
 You can install unetTracker and its dependencies into a pip virtual environment. 
 
@@ -105,7 +105,7 @@ cd
 source torch/bin/activate
 ```
 
-### Clone the unetTracker repository
+## Clone the unetTracker repository
 
 ```
 mkdir ~/repo
@@ -113,7 +113,7 @@ cd ~/repo
 git clone https://github.com/kevin-allen/unetTracker.git
 ```
 
-### Install the unetTracker package
+## Install the unetTracker package
 
 ```
 cd unetTracker
@@ -121,7 +121,7 @@ pip3 install -r requirements.txt
 python3 -m pip install -e .
 ```
 
-### Testing your installation
+## Testing your installation
 
 You should now be able to import unetTracker and torch from Python.
 
@@ -146,12 +146,12 @@ torch.cuda.is_available()
 If you have a Cuda-supported GPU installed correctly, this should return True.
 
 
-### PyTorch for Jetson
+# PyTorch for Jetson
 
 If you are using a Nvidia Jetson instead of a Linux PC, you probably want to install Pytorch as indicated on the [Nvidia website](https://forums.developer.nvidia.com/t/pytorch-for-jetson/72048)
 
 
-### Run jupyter lab
+# Run jupyter lab
 
 
 You must run `source torch/bin/activate` each time you open a terminal to activate your virtual environment. 
@@ -174,7 +174,7 @@ Jupyter --version
 
 
 
-### Run jupyter lab on a remote server
+# Run jupyter lab on a remote server
 
 If you are working on a remote server, run this on the server.
 
