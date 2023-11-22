@@ -30,7 +30,6 @@
 3. `conda install -c conda-forge jupyterlab`
 4. Close and restart the Anaconda PowerShell prompt and activate the torch environment
 5. `jupyter lab`
-6. 
 
 ## Install git for Windows
 
