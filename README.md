@@ -26,6 +26,7 @@ Under the hood, the project uses PyTorch as a deep learning framework.
 We have developed this code on computers running Ubuntu 20.04.
 
 * [Local installation](documentation/install.md)
+* [Tracking project example](documentation/tracking_project_example.md)
 * [Google Colab](documentation/colab.md)
 * [unetTracker in a Docker container](documentation/docker.md)
 * [Getting started](documentation/getting_started.md)
