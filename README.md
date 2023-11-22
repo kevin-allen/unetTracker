@@ -36,7 +36,7 @@ I opted for a U-Net as a model architecture. This model was developed to perform
 
 https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/
 
-<img src="images/u-net-architecture.png" width="1000"/>
+<img src="documentation/images/u-net-architecture.png" width="1000"/>
 
 The model is defined in the `model.py` file.
 
