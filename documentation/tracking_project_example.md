@@ -1,8 +1,8 @@
 # Tracking project example
 
-To learn how to use unetTracker, you can start with a project example in which you can train a network to track fingers in a video.
+To learn how to use unetTracker, you can start with a project example in which you train a network to track moving objects in a video.
 
-The training of the model and model inference will be performed in Google Colab using Google's GPUs.
+The model training and inference will be performed in Google Colab using Google's GPUs.
 
 1. Find a video file with moving target objects. Ideally, the video resolution should be 480x680 or smaller. You can download an example video file here: https://drive.google.com/file/d/1ezrMsINCKPN85O4H71IKKd5cD8u4CE2M/view?usp=drive_link
 2. [Install unetTracker Python package in your Python environment](https://github.com/kevin-allen/unetTracker/blob/main/documentation/install.md). 
