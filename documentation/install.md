@@ -31,13 +31,23 @@
 4. Close and restart the Anaconda PowerShell prompt and activate the torch environment
 5. `jupyter lab`
 
-## Install git for Windows
+## Install unetTracker
 
-1. Download the installer
+You can install unetTracker directly from GitHub using pip
+
+### Use pip to download the repo and install the package
+1. Open the Anaconda PowerShell prompt
+2. Activate your environment: `conda activate torch`
+1. `pip install git+https://github.com/kevin-allen/unetTracker`
+
+
+### Alternative way to install unetTracker using git for Windows
+
+1. Download the `git for Windows` installer
 2. Double-click on the installer
 3. Choose the default installation.
 
-## Get unetTracker repository
+#### Get unetTracker repository
 
 1. Open a git terminal
 2. Create a repo directory
@@ -45,7 +55,7 @@
 4. git clone https://github.com/kevin-allen/unetTracker.git
 
 
-## Instan unetTracker
+#### Instan unetTracker
 
 1. Start the Anaconda PowerShell prompt and activate your torch environment
 2. Install requirements
@@ -53,12 +63,13 @@
 conda install ipywidgets, ipympl, matplotlib, pandas, tqdm, imgaug
 conda install -c conda-forge albumentations
 ```
-
 3. Install unetTracker
 ```
 cd repo/unetTracker
 python -m pip install -e .
 ```
+
+
 
 # Installation on Ubuntu
 
