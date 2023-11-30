@@ -38,7 +38,8 @@ You can install unetTracker directly from GitHub using pip
 ### Use pip to download the repo and install the package
 1. Open the Anaconda PowerShell prompt
 2. Activate your environment: `conda activate torch`
-1. `pip install git+https://github.com/kevin-allen/unetTracker`
+3. `conda install pip`
+4. `pip install git+https://github.com/kevin-allen/unetTracker`
 
 
 ### Alternative way to install unetTracker using git for Windows
