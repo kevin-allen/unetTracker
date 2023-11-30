@@ -21,3 +21,7 @@ The steps that involve labeling new images do not currently work on Google Colab
 6. Train your network
 8. Evaluate your network
 10. Track objects in videos with your network
+
+## Example project
+
+The example project in `tracking_project_notebooks` will guide you through the steps to train a network using Google Colab. Run the notebook with COLAB in their names on Google Colab.

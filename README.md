@@ -15,21 +15,28 @@ Once you have a model that performs as well as needed, you can use your trained 
 
 The repository contains two main parts: 
 1. The unetTracker python package. The code is located in the `unetTracker` folder.
-2. A series of notebooks that shows you how to train, evaluate, and use your model. The notebooks are in the `notebooks` folders.
+2. A series of notebooks that shows you how to train, evaluate, and use your model. Use the notebooks in the folder `tracking_project_notebooks` for a step-by-step introduction on how to create your dataset, train the model on Google Colab, and label videos.
 
 You can run the notebook using a Jupyter server running on a local computer. You will need access to a GPU to train your network and possibly do inference on additional videos. If you don't have access to a GPU on your local computer, you can [use Google Colab](documentation/colab.md) for the steps that require hardware acceleration. 
 
-You can perform live tracking using a webcam if you have a local GPU. But I recommend starting with videos instead of webcam. 
-
 Under the hood, the project uses PyTorch as a deep learning framework.
 
-We have developed this code on computers running Ubuntu 20.04.
 
 * [Local installation](documentation/install.md)
 * [Tracking project example](documentation/tracking_project_example.md)
 * [Google Colab](documentation/colab.md)
-* [unetTracker in a Docker container](documentation/docker.md)
-* [Getting started](documentation/getting_started.md)
+
+
+## Model
+
+I opted for a U-Net as a model architecture. This model was developed to perform image segmentation of biomedical images. The model outputs 2D arrays of the same height and width as the input images. I repurposed the model to output small blobs at the location of the tracked objects. 
+
+https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/
+
+<img src="documentation/images/u-net-architecture.png" width="1000"/>
+
+The model is defined in the `model.py` file.
+
 
 
 
