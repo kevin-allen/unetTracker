@@ -397,7 +397,7 @@ class LabelFromVideoGUI(VBox):
                             button_style='', # 'success', 'info', 'warning', 'danger' or ''
                             tooltip='Click me')
         
-        self.saveButton = widgets.Button(description='Save labelled frame',
+        self.saveButton = widgets.Button(description='Save labeled frame',
                             disabled=False,
                             button_style='', # 'success', 'info', 'warning', 'danger' or ''
                             tooltip='Click me') # (FontAwesome names without the `fa-` prefix)
@@ -945,7 +945,7 @@ class LabelFromImagesGUI(VBox):
                             icon='check') # (FontAwesome names without the `fa-` prefix)
         
         
-        self.saveButton = widgets.Button(description='Save labelled frame',
+        self.saveButton = widgets.Button(description='Save labeled frame',
                             disabled=False,
                             button_style='', # 'success', 'info', 'warning', 'danger' or ''
                             tooltip='Click me',

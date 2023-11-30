@@ -78,17 +78,7 @@ class UNetDataset(torch.utils.data.Dataset):
         self.augmentation_RotateProb = 0.3
         self.augmentation_RandomBrightnessContrastProb = 0.2
         
-        if transform == "default":
-            print("Using default augmentation")
-            original_height = 480
-            original_width = 640
-            self.transform =  A.Compose([   
-                    A.RandomSizedCrop(min_max_height=(original_height-50, original_height),w2h_ratio=original_width/original_height,height=original_height, width=original_width, p=self.augmentation_RandomSizedCropProb),
-                    A.HorizontalFlip(p=self.augmentation_HorizontalFlipProb),
-                    A.Rotate (limit=30,border_mode=cv2.BORDER_CONSTANT,p=self.augmentation_RotateProb),
-                    A.RandomBrightnessContrast(p=self.augmentation_RandomBrightnessContrastProb)])
-        else:
-            self.transform = transform
+        self.transform = transform
         
         
         
