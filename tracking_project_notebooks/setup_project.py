@@ -10,6 +10,6 @@ import pickle
 
 from unetTracker.trackingProject import TrackingProject
 
-model_name = "finger_tracker"
+model_name = "finger_tracker2"
 root_path = "/home/kevin/Documents/trackingProjects"
 project = TrackingProject(name=model_name,root_folder = root_path)
