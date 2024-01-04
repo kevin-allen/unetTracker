@@ -25,6 +25,7 @@ Under the hood, the project uses PyTorch as a deep learning framework.
 * [Local installation](documentation/install.md)
 * [Tracking project example](documentation/tracking_project_example.md)
 * [Google Colab](documentation/colab.md)
+* [Speed up inference time](documentation/speed_up.md)
 
 
 ## Model
