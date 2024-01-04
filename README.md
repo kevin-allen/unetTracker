@@ -44,5 +44,5 @@ https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/
 
 <img src="documentation/images/u-net-architecture.png" width="1000"/>
 
-The model is defined in the `model.py` file.
+The model is defined in `unetTracker/unetTracker/unet.py`.
 
