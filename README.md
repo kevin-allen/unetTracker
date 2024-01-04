@@ -14,12 +14,21 @@ Once you have a model that performs as well as needed, you can use your trained 
 
 The repository contains two main parts: 
 1. The unetTracker python package. The code is located in the `unetTracker` folder.
-2. A series of notebooks that shows you how to train, evaluate, and use your model. If you want to have a go and you don't have a computer with a GPU, you can use the Notebooks located in the folder `tracking_project_notebooks_colab` for a step-by-step introduction to creating your project and datasets, training the model, and labeling videos. See the instructions on how to [use Google Colab](documentation/colab.md).
+2. A series of notebooks that shows you how to train, evaluate, and use your model. These Notebooks are located in the folders with `notebooks` in their names.
 
-If you have a computer with a GPU, you can run the notebook using a Jupyter server running on a local computer. ou will need access to a GPU to train your network and possibly make inferences on additional videos. 
+## Required hardware
+  
+You will need to have access to a GPU/TPU to train your network and make inferences. 
+
+If you don't have a computer with a GPU, you use Google Colab to work with unetTracker. Use the Notebooks located in the folder `tracking_project_notebooks_colab` for a step-by-step introduction to creating your project and datasets, training the model, and labeling videos. See the instructions on how to [use Google Colab](documentation/colab.md).
+  
+More information on getting going with your project can be found [here](https://github.com/kevin-allen/unetTracker/blob/main/documentation/tracking_project_example.md).
+
+If you have a computer with a GPU, you can run the notebook using a Jupyter server running on a local computer. You can use the Notebooks of the `notebooks` directory.
 
 Under the hood, the project uses PyTorch as a deep learning framework.
 
+## Useful information
 
 * [Local installation](documentation/install.md)
 * [Tracking project example](documentation/tracking_project_example.md)
@@ -36,9 +45,4 @@ https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/
 <img src="documentation/images/u-net-architecture.png" width="1000"/>
 
 The model is defined in the `model.py` file.
-
-
-
-
-
 
