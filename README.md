@@ -8,16 +8,15 @@ Here is an animation to give you a sense of what unetTracker does. The unetTrack
 
 ![Example](documentation/images/tracking_animation.gif)
 
-
 A series of Jupyter notebooks get you through the steps required to create your dataset of labeled images, train your neural network, assess how good it is, and improve it with problematic images.  
 
 Once you have a model that performs as well as needed, you can use your trained model to process other videos.
 
 The repository contains two main parts: 
 1. The unetTracker python package. The code is located in the `unetTracker` folder.
-2. A series of notebooks that shows you how to train, evaluate, and use your model. Use the notebooks in the folder `tracking_project_notebooks` for a step-by-step introduction on how to create your dataset, train the model on Google Colab, and label videos.
+2. A series of notebooks that shows you how to train, evaluate, and use your model. If you want to have a go and you don't have a computer with a GPU, you can use the Notebooks located in the folder `tracking_project_notebooks_colab` for a step-by-step introduction to creating your project and datasets, training the model, and labeling videos. See the instructions on how to [use Google Colab](documentation/colab.md).
 
-You can run the notebook using a Jupyter server running on a local computer. You will need access to a GPU to train your network and possibly do inference on additional videos. If you don't have access to a GPU on your local computer, you can [use Google Colab](documentation/colab.md) for the steps that require hardware acceleration. 
+If you have a computer with a GPU, you can run the notebook using a Jupyter server running on a local computer. ou will need access to a GPU to train your network and possibly make inferences on additional videos. 
 
 Under the hood, the project uses PyTorch as a deep learning framework.
 
