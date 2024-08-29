@@ -2,12 +2,17 @@ import numpy as np
 class Cropper():
     """
     Class to crop images and translate cropped coordinates to full-size image coordinate system.
+
+    This class is used to get cropped images from a larger image. 
+    This is used to speed up inference by using smaller images than the original video frame size.
+    For instance, if you know where an object was 20 ms ago in a video, you can use a smaller cropped image centered on the object's previous position.
+    Inference is generally faster for smaller images than for large images.
     """
     
     def __init__(self,cropped_image_size=[100,100]):
         """
         Argument 
-        cropped_image_size: list with the row,column size of the cropped images
+        cropped_image_size: a list containing the number of rows and columns in the cropped images
         """
         self.cropped_image_size=cropped_image_size
         
